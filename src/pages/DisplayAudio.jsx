@@ -1,6 +1,10 @@
 import React from 'react'
 
-const DisplayTrack = () => {
-    return <div>DisplayTrack content here</div>;
+
+const DisplayAudio = () => {
+    return <div>
+      <h1>Audio Player</h1>
+      <audio src='./'></audio>
+      </div>;
   };
-  export default DisplayTrack;
+  export default DisplayAudio;

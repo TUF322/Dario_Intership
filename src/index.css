@@ -1,3 +1,9 @@
 *{
   background-color: #fff;
 }
+
+.audio-player{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
