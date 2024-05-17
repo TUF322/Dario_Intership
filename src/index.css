@@ -1,25 +1,69 @@
-*{
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background-color: #fff;
 }
 
 .audio-player {
   display: flex;
-  flex-direction: column; /* Adjust this as needed for your layout */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: 400px; /* Optional: adds padding around the player */
-  background-color: #fff; /* Optional: background color for the player */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: adds a shadow for better visibility */
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  width: 300px; /* Adjust width as needed */
 }
+
+.audio-player audio {
+  display: none; /* Hide the default audio player controls */
+}
+
+.controls-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.controls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px; /* Add padding to buttons */
+  font-size: 24px; /* Increase icon size */
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 20px;
+}
+
 .progress-bar {
   cursor: pointer;
   position: relative;
-  width: 100%;
+  flex-grow: 1;
   height: 10px;
   background-color: #ddd;
+  margin: 0 10px;
 }
 
 .progress-bar div {
   height: 100%;
-  background-color: #0037ff;
+  background-color: #000;
+}
+
+.progress-time {
+  font-size: 14px;
+  width: 40px;
+  text-align: center;
 }

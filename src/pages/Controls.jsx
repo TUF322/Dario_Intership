@@ -17,26 +17,38 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef }) => {
     }
   }, [isPlaying, audioRef]);
 
-  const skipTime = (seconds) => {
-    audioRef.current.currentTime += seconds;
+  const handleSkipBack = () => {
+    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
+  };
+
+  const handleSkipForward = () => {
+    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
+  };
+
+  const handleSkipBack30 = () => {
+    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 30);
+  };
+
+  const handleSkipForward30 = () => {
+    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
   };
 
   return (
     <div className="controls-wrapper">
       <div className="controls">
-        <button onClick={() => skipTime(-30)}>
+        <button onClick={handleSkipBack30}>
           <IoPlaySkipBackSharp />
         </button>
-        <button onClick={() => skipTime(-10)}>
+        <button onClick={handleSkipBack}>
           <IoPlayBackSharp />
         </button>
         <button onClick={() => setIsPlaying(!isPlaying)}>
           {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
         </button>
-        <button onClick={() => skipTime(10)}>
+        <button onClick={handleSkipForward}>
           <IoPlayForwardSharp />
         </button>
-        <button onClick={() => skipTime(30)}>
+        <button onClick={handleSkipForward30}>
           <IoPlaySkipForwardSharp />
         </button>
       </div>

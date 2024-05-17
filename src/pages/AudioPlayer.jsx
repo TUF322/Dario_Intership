@@ -13,13 +13,8 @@ const AudioPlayer = () => {
   useEffect(() => {
     const audio = audioRef.current;
 
-    const updateCurrentTime = () => {
-      setCurrentTime(audio.currentTime);
-    };
-
-    const updateDuration = () => {
-      setDuration(audio.duration);
-    };
+    const updateCurrentTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
 
     audio.addEventListener('timeupdate', updateCurrentTime);
     audio.addEventListener('loadedmetadata', updateDuration);
