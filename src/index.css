@@ -2,8 +2,24 @@
   background-color: #fff;
 }
 
-.audio-player{
+.audio-player {
   display: flex;
+  flex-direction: column; /* Adjust this as needed for your layout */
   align-items: center;
   justify-content: center;
+  padding-top: 400px; /* Optional: adds padding around the player */
+  background-color: #fff; /* Optional: background color for the player */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: adds a shadow for better visibility */
+}
+.progress-bar {
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background-color: #ddd;
+}
+
+.progress-bar div {
+  height: 100%;
+  background-color: #0037ff;
 }
