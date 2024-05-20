@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
 import srcaudio from './AudioPlayerC/whale.mp3';
+import Spectrogram from './Spectrogram';
 import '../index.css';
 
 const AudioPlayer = () => {
@@ -31,6 +32,7 @@ const AudioPlayer = () => {
       <div className="inner">
         <Controls audioRef={audioRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
         <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
+        <Spectrogram audioRef={audioRef} />
       </div>
     </div>
   );
