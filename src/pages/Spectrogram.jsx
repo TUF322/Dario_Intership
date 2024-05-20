@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import Spectrogram from 'wavesurfer.js/dist/plugins/spectrogram.esm.js'; // Import Spectrogram plugin separately
+import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'; // Import Regions plugin
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
-  const spectrogramRef = useRef(null);
   let wavesurfer = null;
 
   useEffect(() => {
@@ -14,10 +13,7 @@ const SpectrogramComponent = ({ audioRef }) => {
       waveColor: '#ddd',
       progressColor: '#333',
       plugins: [
-        Spectrogram.create({
-          container: spectrogramRef.current,
-          labels: true,
-        }),
+        RegionsPlugin.create(), // Include Regions plugin
       ],
     });
 
@@ -38,7 +34,6 @@ const SpectrogramComponent = ({ audioRef }) => {
   return (
     <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
-      <div ref={spectrogramRef} style={{ width: '100%', height: '256px' }}></div>
     </div>
   );
 };
