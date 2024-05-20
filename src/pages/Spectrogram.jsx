@@ -7,14 +7,15 @@ const SpectrogramComponent = ({ audioRef }) => {
   let wavesurfer = null;
 
   useEffect(() => {
-    // Initialize WaveSurfer instance
+    // Initialize WaveSurfer instance with Regions plugin
     wavesurfer = WaveSurfer.create({
       container: waveformRef.current,
       waveColor: '#ddd',
       progressColor: '#333',
       plugins: [
-        RegionsPlugin.create(), // Include Regions plugin
+        RegionsPlugin.create(),
       ],
+      interact: false, // Disable audio interaction
     });
 
     // Load audio source

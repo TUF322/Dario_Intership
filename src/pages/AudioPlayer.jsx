@@ -27,12 +27,18 @@ const AudioPlayer = () => {
   }, []);
 
   return (
-    <div className="audio-player">
-      <audio ref={audioRef} src={srcaudio}></audio>
+    <div >
+      <div className="spectrogram-container">
+        <div className='spectrogram-card'><Spectrogram audioRef={audioRef} /></div>
+    
+      </div>
+      
+      
       <div className="inner">
+      <div className="audio-player">
         <Controls audioRef={audioRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
-        <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
-        <Spectrogram audioRef={audioRef} />
+        <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} /></div>
+      <audio ref={audioRef} src={srcaudio}></audio>
       </div>
     </div>
   );

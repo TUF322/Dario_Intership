@@ -72,3 +72,18 @@ body {
   width: 40px;
   text-align: center;
 }
+
+.spectrogram-card {
+  
+  padding-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+
+}
+
+.spectrogram-container {
+  width: 115%;
+  height: 128px;
+  margin-bottom: 20px;
+}
