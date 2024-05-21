@@ -1,34 +1,23 @@
+// src/pages/Spectrogram.jsx
+
 import React, { useEffect, useRef } from 'react';
-import WaveSurfer from 'wavesurfer.js';
-import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'; // Import Regions plugin
+import { initializeWaveformWithRegions } from './Regions';
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
-  let wavesurfer = null;
+  let wavesurferInstance = null;
 
   useEffect(() => {
-    // Initialize WaveSurfer instance with Regions plugin
-    wavesurfer = WaveSurfer.create({
-      container: waveformRef.current,
-      waveColor: '#ddd',
-      progressColor: '#333',
-      plugins: [
-        RegionsPlugin.create(),
-      ],
-      interact: false, // Disable audio interaction
-    });
-
-    // Load audio source
-    wavesurfer.load(audioRef.current.src);
+    const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
+    wavesurferInstance = ws;
 
     // Event listeners for play, pause, and seek
-    audioRef.current.onplay = () => wavesurfer.play();
-    audioRef.current.onpause = () => wavesurfer.pause();
-    audioRef.current.onseeked = () => wavesurfer.seekTo(audioRef.current.currentTime / audioRef.current.duration);
+    audioRef.current.onplay = () => ws.play();
+    audioRef.current.onpause = () => ws.pause();
+    audioRef.current.onseeked = () => ws.seekTo(audioRef.current.currentTime / audioRef.current.duration);
 
-    // Cleanup function
     return () => {
-      wavesurfer.destroy();
+      ws.destroy();
     };
   }, [audioRef]);
 

@@ -1,10 +1,13 @@
+// src/pages/Regions.jsx
+
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 
 // Utility functions
-const random = (min, max) => Math.random() * (min - max) + min;
+const random = (min, max) => Math.random() * (max - min) + min;
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
+// Initialize waveform with regions
 const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const ws = WaveSurfer.create({
     container,
