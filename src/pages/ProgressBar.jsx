@@ -1,3 +1,5 @@
+// src/components/ProgressBar.jsx
+
 import React from 'react';
 
 const formatTime = (time) => {

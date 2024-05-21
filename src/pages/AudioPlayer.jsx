@@ -36,8 +36,9 @@ const AudioPlayer = () => {
       
       <div className="inner">
       <div className="audio-player">
-        <Controls audioRef={audioRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} />
-        <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} /></div>
+        {/* <Controls audioRef={audioRef} isPlaying={isPlaying} setIsPlaying={setIsPlaying} /> */}
+        {/* <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} /> */}
+        </div>
       <audio ref={audioRef} src={srcaudio}></audio>
       </div>
     </div>

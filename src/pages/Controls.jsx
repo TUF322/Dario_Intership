@@ -1,3 +1,5 @@
+// src/components/Controls.jsx
+
 import React, { useEffect, useState } from 'react';
 import {
   IoPlayBackSharp,
@@ -6,11 +8,13 @@ import {
   IoPlaySkipForwardSharp,
   IoPlaySharp,
   IoPauseSharp,
+  IoRepeat,
+  IoResize,
 } from 'react-icons/io5';
 
 const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => {
-  const [loop, setLoop] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(10);
+  const [isLooping, setIsLooping] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     if (isPlaying) {
@@ -36,18 +40,18 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => 
     audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
   };
 
-  const handleLoopChange = (e) => {
-    setLoop(e.target.checked);
+  const handleLoopToggle = () => {
+    setIsLooping(!isLooping);
     if (wavesurferInstance) {
-      wavesurferInstance.setLoop(e.target.checked);
+      wavesurferInstance.setLoop(!isLooping);
     }
   };
 
-  const handleZoomChange = (e) => {
-    const newZoomLevel = Number(e.target.value);
+  const handleZoom = () => {
+    const newZoomLevel = zoomLevel === 1 ? 2 : 1;
     setZoomLevel(newZoomLevel);
     if (wavesurferInstance) {
-      wavesurferInstance.zoom(newZoomLevel);
+      wavesurferInstance.zoom(newZoomLevel * 100); // Adjust the zoom factor as needed
     }
   };
 
@@ -69,26 +73,12 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => 
         <button onClick={handleSkipForward30}>
           <IoPlaySkipForwardSharp />
         </button>
-      </div>
-      <div className="additional-controls">
-        <label>
-          <input
-            type="checkbox"
-            checked={loop}
-            onChange={handleLoopChange}
-          />
-          Loop regions
-        </label>
-        <label>
-          Zoom:
-          <input
-            type="range"
-            min="10"
-            max="1000"
-            value={zoomLevel}
-            onChange={handleZoomChange}
-          />
-        </label>
+        <button onClick={handleLoopToggle}>
+          <IoRepeat color={isLooping ? 'green' : 'black'} />
+        </button>
+        <button onClick={handleZoom}>
+          <IoResize />
+        </button>
       </div>
     </div>
   );

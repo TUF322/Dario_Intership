@@ -1,15 +1,28 @@
 // src/pages/Spectrogram.jsx
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { initializeWaveformWithRegions } from './Regions';
+import Controls from './Controls';
+import ProgressBar from './ProgressBar';
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
-  let wavesurferInstance = null;
+  const [wavesurferInstance, setWavesurferInstance] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
-    wavesurferInstance = ws;
+    const { ws } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
+    setWavesurferInstance(ws);
+
+    ws.on('audioprocess', () => {
+      setCurrentTime(ws.getCurrentTime());
+    });
+
+    ws.on('ready', () => {
+      setDuration(ws.getDuration());
+    });
 
     // Event listeners for play, pause, and seek
     audioRef.current.onplay = () => ws.play();
@@ -23,7 +36,14 @@ const SpectrogramComponent = ({ audioRef }) => {
 
   return (
     <div>
-      <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
+      <div ref={waveformRef} style={{ width: '95vw', height: '128px' }}></div>
+      <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
+      <Controls
+        isPlaying={isPlaying}
+        setIsPlaying={setIsPlaying}
+        audioRef={audioRef}
+        wavesurferInstance={wavesurferInstance}
+      />
     </div>
   );
 };
