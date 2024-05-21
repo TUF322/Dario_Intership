@@ -35,15 +35,22 @@ const SpectrogramComponent = ({ audioRef }) => {
   }, [audioRef]);
 
   return (
-    <div>
+    <div className='inner'>
+      <div className='spectrogram-container'>
       <div ref={waveformRef} style={{ width: '95vw', height: '128px' }}></div>
+      <div className='progress-container'>
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
+      </div>
+      
       <Controls
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
         audioRef={audioRef}
         wavesurferInstance={wavesurferInstance}
       />
+
+      </div>
+      
     </div>
   );
 };
