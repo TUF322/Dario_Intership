@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   IoPlayBackSharp,
   IoPlayForwardSharp,
@@ -8,7 +8,10 @@ import {
   IoPauseSharp,
 } from 'react-icons/io5';
 
-const Controls = ({ isPlaying, setIsPlaying, audioRef }) => {
+const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => {
+  const [loop, setLoop] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(10);
+
   useEffect(() => {
     if (isPlaying) {
       audioRef.current.play();
@@ -33,6 +36,21 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef }) => {
     audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
   };
 
+  const handleLoopChange = (e) => {
+    setLoop(e.target.checked);
+    if (wavesurferInstance) {
+      wavesurferInstance.setLoop(e.target.checked);
+    }
+  };
+
+  const handleZoomChange = (e) => {
+    const newZoomLevel = Number(e.target.value);
+    setZoomLevel(newZoomLevel);
+    if (wavesurferInstance) {
+      wavesurferInstance.zoom(newZoomLevel);
+    }
+  };
+
   return (
     <div className="controls-wrapper">
       <div className="controls">
@@ -51,6 +69,26 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef }) => {
         <button onClick={handleSkipForward30}>
           <IoPlaySkipForwardSharp />
         </button>
+      </div>
+      <div className="additional-controls">
+        <label>
+          <input
+            type="checkbox"
+            checked={loop}
+            onChange={handleLoopChange}
+          />
+          Loop regions
+        </label>
+        <label>
+          Zoom:
+          <input
+            type="range"
+            min="10"
+            max="1000"
+            value={zoomLevel}
+            onChange={handleZoomChange}
+          />
+        </label>
       </div>
     </div>
   );
