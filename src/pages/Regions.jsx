@@ -10,7 +10,7 @@ const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0
 const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const ws = WaveSurfer.create({
     container,
-    waveColor: 'rgb(200, 0, 200)',
+    waveColor: 'rgb(75, 75, 200)',
     progressColor: 'rgb(100, 0, 100)',
     url: audioUrl,
   });
@@ -20,11 +20,11 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   ws.on('ready', () => {
     // Add regions
     wsRegions.addRegion({
-      start: 0,
+      start: 0.5,
       end: 8,
-      content: 'Resize me',
+      content: 'Start',
       color: randomColor(),
-      drag: false,
+      drag: true,
       resize: true,
     });
     wsRegions.addRegion({

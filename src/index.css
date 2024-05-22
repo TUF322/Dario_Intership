@@ -3,6 +3,7 @@
   padding: 0;
   /* box-sizing: border-box; */
   background-color: #fff;
+  border-radius: 15px;
 }
 
 html,
@@ -13,6 +14,7 @@ body {
   align-items: center;
   justify-content: center;
   background-color: #1c1c1c !important; /* Ensure background color is applied */
+  border-radius: 15px;
 }
 
 .audio-player {
@@ -36,6 +38,7 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 50px;
+  border-radius: 15px;
 }
 
 .controls button {
@@ -51,6 +54,7 @@ body {
   align-items: center;
   width: 100%;
   margin-top: 50px;
+  border-radius: 15px;
   
 }
 
@@ -79,15 +83,17 @@ body {
   padding-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 15px;
+  margin-top: 20px;
   
 
 }
 
 .spectrogram-container {
   width: 96vw;
-  height: 128px;
+  height: 200px;
   margin-bottom: 20px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
 }
 
 .inner{
