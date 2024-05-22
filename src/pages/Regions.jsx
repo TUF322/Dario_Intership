@@ -1,13 +1,12 @@
-// src/pages/Regions.jsx
+// src/pages/Regions.js
 
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 
 // Utility functions
-const random = (min, max) => Math.random() * (max - min) + min;
+const random = (min, max) => Math.random() * (min - max) + min;
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
-// Initialize waveform with regions
 const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const ws = WaveSurfer.create({
     container,
@@ -42,6 +41,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
       content: 'Drag me',
       color: randomColor(),
       resize: false,
+      
     });
     wsRegions.addRegion({
       start: 19,
@@ -73,7 +73,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
     if (activeRegion === region) {
       activeRegion = null;
       if (loop) {
-        region.play();
+        ws.play(region.start);
       }
     }
   });

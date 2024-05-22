@@ -1,5 +1,3 @@
-// src/components/Controls.jsx
-
 import React, { useEffect, useState } from 'react';
 import {
   IoPlayBackSharp,
@@ -12,9 +10,9 @@ import {
   IoResize,
 } from 'react-icons/io5';
 
-const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => {
-  const [isLooping, setIsLooping] = useState(false);
+const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [region, setRegion] = useState(null);
 
   useEffect(() => {
     if (isPlaying) {
@@ -41,11 +39,25 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance }) => 
   };
 
   const handleLoopToggle = () => {
-    setIsLooping(!isLooping);
-    if (wavesurferInstance) {
-      wavesurferInstance.setLoop(!isLooping);
+    setIsLooping(prevLoop => !prevLoop);
+  
+    if (wavesurferRegions) {
+      if (!region) {
+        // Add a new region with loop property set to true
+        const newRegion = wavesurferRegions.addRegion({
+          start: 0, // Example start
+          end: 10,  // Example end
+          loop: isLooping, // Set loop property based on current state
+        });
+        setRegion(newRegion);
+      } else {
+        // Update the loop property of the existing region
+        region.update({ loop: !isLooping });
+      }
     }
   };
+  
+  
 
   const handleZoom = () => {
     const newZoomLevel = zoomLevel === 1 ? 2 : 1;
