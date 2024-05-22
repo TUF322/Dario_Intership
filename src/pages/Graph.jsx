@@ -45,7 +45,7 @@ const Graph = ({ frequencyData }) => {
     });
 
     // Throttle the updateFrequencyData function to limit the frequency of updates
-    const throttledUpdateFrequencyData = throttle(updateFrequencyData, 5000000); // Adjust throttle interval as needed
+    const throttledUpdateFrequencyData = throttle(updateFrequencyData, 50000); // Adjust throttle interval as needed
 
     function updateFrequencyData() {
       if (chartInstance) {

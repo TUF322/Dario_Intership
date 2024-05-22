@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { initializeWaveformWithRegions } from './Regions';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
-import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
