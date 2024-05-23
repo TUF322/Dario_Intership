@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
-import srcaudio from './AudioPlayerC/whale.mp3';
+import srcaudio from './AudioPlayerC/test.mp3';
 import Spectrogram from './Spectrogram';
 import '../index.css';
 

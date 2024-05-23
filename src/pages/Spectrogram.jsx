@@ -17,6 +17,7 @@ const SpectrogramComponent = ({ audioRef }) => {
   const canvasHeight = 200; // Set the height of the canvas
   const backgroundColor = '#ddd'; // Set the background color to white
   const textColor = 'black'; // Set the text color to black
+  const marginLeft = 60; // Margin for the frequency scale
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
@@ -61,9 +62,9 @@ const SpectrogramComponent = ({ audioRef }) => {
       canvasCtx.fillStyle = backgroundColor;
       canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
+      const barWidth = (canvas.width - marginLeft) / bufferLength;
       let barHeight;
-      let x = 0;
+      let x = marginLeft;
 
       for (let i = 0; i < bufferLength; i++) {
         barHeight = dataArray[i];
@@ -81,24 +82,27 @@ const SpectrogramComponent = ({ audioRef }) => {
 
   const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
     const nyquist = sampleRate / 2;
-    const step = canvasHeight / bufferLength;
-    const stepFrequency = nyquist / (bufferLength / 2);
-
+    const stepFrequency = nyquist / bufferLength;
+  
     canvasCtx.fillStyle = textColor;
     canvasCtx.font = '12px Arial';
-    for (let i = 0; i <= bufferLength / 2; i++) {
+  
+    for (let i = 0; i <= bufferLength; i++) {
       const frequency = stepFrequency * i;
       if (frequency % 1000 === 0) {
-        const y = canvasHeight - i * step;
+        const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
         canvasCtx.fillText((frequency / 1000).toFixed(1) + ' kHz', 10, y);
       }
     }
   };
+  
+ 
 
   return (
     <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
-      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analizer'></canvas>
+      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width:'96vw' }}></canvas>
+
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       <Controls
         isPlaying={isPlaying}
