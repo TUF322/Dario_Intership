@@ -99,3 +99,12 @@ body {
 .inner{
   width: 95vw;
 }
+
+.audio-analizer{
+  width: 96vw;
+  height: 400px;
+  background-color: #fff;
+  color: #000;
+  margin-top: 25px;
+  font-size:large;
+}
