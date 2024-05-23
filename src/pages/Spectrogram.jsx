@@ -17,7 +17,7 @@ const SpectrogramComponent = ({ audioRef }) => {
   const canvasHeight = 200; // Set the height of the canvas
   const backgroundColor = '#ddd'; // Set the background color to white
   const textColor = 'black'; // Set the text color to black
-  const marginLeft = 60; // Margin for the frequency scale
+  const marginLeft = 65; // Margin for the frequency scale
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
@@ -89,12 +89,13 @@ const SpectrogramComponent = ({ audioRef }) => {
   
     for (let i = 0; i <= bufferLength; i++) {
       const frequency = stepFrequency * i;
-      if (frequency % 1000 === 0) {
+      if (frequency % 1000 === 0 && frequency !== 18000 && frequency !== 21000) {
         const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-        canvasCtx.fillText((frequency / 1000).toFixed(1) + ' kHz', 10, y);
+        canvasCtx.fillText((frequency / 1000).toFixed(1) + ' kHz-', 10, y);
       }
     }
   };
+  
   
  
 
