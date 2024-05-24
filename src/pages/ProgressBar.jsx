@@ -23,7 +23,7 @@ const ProgressBar = ({ currentTime, duration, audioRef }) => {
     <div className="progress-container">
       <div className="progress-time">{formatTime(currentTime)}</div>
       <div className="progress-bar" onClick={handleProgressClick}>
-        <div style={{ width: `${progressPercentage}%`, height: '100%', backgroundColor: '#000' }}></div>
+        <div style={{ width: `${progressPercentage}%`, height: '100%', backgroundColor: '#a44612' }}></div>
       </div>
       <div className="progress-time">{formatTime(duration)}</div>
     </div>

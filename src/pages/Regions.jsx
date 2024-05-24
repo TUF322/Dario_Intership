@@ -1,8 +1,6 @@
-// Regions.jsx
-
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
-import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
 // Utility functions
 const random = (min, max) => Math.random() * (min - max) + min;
@@ -12,42 +10,14 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const ws = WaveSurfer.create({
     container,
     waveColor: 'rgb(75, 75, 200)',
-    progressColor: 'rgb(100, 0, 100)',
+    progressColor: '#0000fe',
     url: audioUrl,
     plugins: [TimelinePlugin.create()],
-    
   });
 
   const wsRegions = ws.registerPlugin(RegionsPlugin.create());
 
   ws.on('ready', () => {
-    // Add regions
-    wsRegions.addRegion({
-      start: 0.5,
-      end: 8,
-      content: 'Start',
-      color: randomColor(),
-      drag: true,
-      resize: true,
-    });
-    wsRegions.addRegion({
-      start: 9,
-      end: 10,
-      content: 'whale',
-      color: randomColor(),
-      minLength: 1,
-      maxLength: 10,
-    });
-    wsRegions.addRegion({
-      start: 12,
-      end: 17,
-      content: 'water noise',
-      color: randomColor(),
-      resize: true,
-      
-    });
-
-
     // Enable drag selection
     wsRegions.enableDragSelection({
       color: 'rgba(255, 0, 0, 0.1)',

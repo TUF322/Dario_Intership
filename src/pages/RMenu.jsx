@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 
-const RMenu = ({ addRegion }) => {
+const RMenu = ({ addRegion, deleteRegion }) => {
   const [regionName, setRegionName] = useState('');
 
   const handleAddRegion = () => {
-    addRegion(regionName);
-    setRegionName(''); // Clear the input after creating the region
+    if (regionName.trim() !== '') {
+      addRegion(regionName);
+      setRegionName(''); // Clear the input after creating the region
+    }
+  };
+
+  const handleDeleteRegion = () => {
+    if (regionName.trim() !== '') {
+      deleteRegion(regionName);
+      console.log("delete clicked in RMenu");
+      setRegionName(''); // Clear the input after deleting the region
+    }
   };
 
   return (
@@ -17,6 +27,7 @@ const RMenu = ({ addRegion }) => {
         placeholder="Enter region name"
       />
       <button onClick={handleAddRegion}>Add Region</button>
+      <button onClick={handleDeleteRegion}>Delete Region</button>
     </div>
   );
 };

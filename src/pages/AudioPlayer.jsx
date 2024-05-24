@@ -28,16 +28,13 @@ const AudioPlayer = () => {
   }, []);
 
   return (
-    <div >
-       <div className="spectrogram-container">
+    <div>
+       
         <div className='spectrogram-card'><Spectrogram audioRef={audioRef} /></div>
     
-      </div>
-      <div className="inner">
-     
      
       <audio ref={audioRef} src={srcaudio}></audio>
-      </div>
+      
     </div>
   );
 };
