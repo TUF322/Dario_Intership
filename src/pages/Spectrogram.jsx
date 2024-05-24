@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { initializeWaveformWithRegions } from './Regions';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
+import RMenu from './RMenu';
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
@@ -83,26 +84,36 @@ const SpectrogramComponent = ({ audioRef }) => {
   const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
     const nyquist = sampleRate / 2;
     const stepFrequency = nyquist / bufferLength;
-  
+
     canvasCtx.fillStyle = textColor;
     canvasCtx.font = '12px Arial';
-  
+
     for (let i = 0; i <= bufferLength; i++) {
       const frequency = stepFrequency * i;
-      if (frequency % 1000 === 0) {
+      const frequencyInKHz = (frequency / 1000).toFixed(1);
+      if (frequency % 1000 === 0 && ![21.0, 18.0].includes(parseFloat(frequencyInKHz))) {
         const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-        canvasCtx.fillText((frequency / 1000).toFixed(1) + ' kHz', 10, y);
+        canvasCtx.fillText(frequencyInKHz + ' kHz', 10, y);
       }
     }
   };
-  
- 
+
+  const addRegion = (regionName) => {
+    const start = wavesurferInstance.getCurrentTime();
+    const end = start + 10; // Default length of the region
+    wavesurferRegions.addRegion({
+      start,
+      end,
+      content: regionName,
+      color: 'rgba(0, 255, 0, 0.3)', // Example color
+    });
+  };
 
   return (
     <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
-      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width:'96vw' }}></canvas>
-
+      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
+      <RMenu addRegion={addRegion} />
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       <Controls
         isPlaying={isPlaying}

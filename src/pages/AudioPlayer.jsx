@@ -1,3 +1,4 @@
+//AudioPlayer.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
