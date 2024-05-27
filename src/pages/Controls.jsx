@@ -10,52 +10,60 @@ import {
   IoResize,
 } from 'react-icons/io5';
 
-const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
+const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [region, setRegion] = useState(null);
 
   useEffect(() => {
-    if (isPlaying) {
-      audioRef.current.play();
-    } else {
-      audioRef.current.pause();
+    if (wavesurferInstance) {
+      if (isPlaying) {
+        wavesurferInstance.play();
+      } else {
+        wavesurferInstance.pause();
+      }
     }
-  }, [isPlaying, audioRef]);
+  }, [isPlaying, wavesurferInstance]);
 
   const handleSkipBack = () => {
-    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
+    if (wavesurferInstance) {
+      wavesurferInstance.skipBackward(10);
+    }
   };
 
   const handleSkipForward = () => {
-    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
+    if (wavesurferInstance) {
+      wavesurferInstance.skipForward(10);
+    }
   };
 
   const handleSkipBack30 = () => {
-    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 30);
+    if (wavesurferInstance) {
+      wavesurferInstance.skipBackward(30);
+    }
   };
 
   const handleSkipForward30 = () => {
-    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
+    if (wavesurferInstance) {
+      wavesurferInstance.skipForward(30);
+    }
   };
 
   const handleLoopToggle = () => {
     setIsLooping(prevLoop => !prevLoop);
-  
-    if (wavesurferRegions) {
-      if (!region) {
-        // Add a new region with loop property set to true
-        const newRegion = wavesurferRegions.addRegion({
-          start: 0, // Example start
-          end: 10,  // Example end
-          loop: isLooping, // Set loop property based on current state
-        });
-        setRegion(newRegion);
-      } else {
-        // Update the loop property of the existing region
-        region.update({ loop: !isLooping });
+    
+    if (wavesurferRegions && wavesurferRegions.list) {
+      // Check if there are any existing regions
+      if (Object.keys(wavesurferRegions.list).length > 0) {
+        // Set looping property of all existing regions based on current state
+        for (const regionId in wavesurferRegions.list) {
+          const region = wavesurferRegions.list[regionId];
+          region.update({ loop: isLooping });
+        }
       }
     }
   };
+  
+  
   
   
 

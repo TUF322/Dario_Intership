@@ -2,14 +2,13 @@ import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
-// Utility functions
 const random = (min, max) => Math.random() * (min - max) + min;
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
 const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const ws = WaveSurfer.create({
     container,
-    waveColor: 'rgb(75, 75, 200)',
+    waveColor: 'rgb(75, 75, 100)',
     progressColor: '#0000fe',
     url: audioUrl,
     plugins: [TimelinePlugin.create()],
@@ -18,7 +17,6 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   const wsRegions = ws.registerPlugin(RegionsPlugin.create());
 
   ws.on('ready', () => {
-    // Enable drag selection
     wsRegions.enableDragSelection({
       color: 'rgba(255, 0, 0, 0.1)',
     });
@@ -26,7 +24,6 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
 
   let activeRegion = null;
 
-  // Event handlers for region interactions
   wsRegions.on('region-in', (region) => {
     console.log('region-in', region);
     activeRegion = region;
@@ -35,9 +32,10 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
   wsRegions.on('region-out', (region) => {
     console.log('region-out', region);
     if (activeRegion === region) {
-      activeRegion = null;
       if (loop) {
-        ws.play(region.start);
+        region.play();
+      } else {
+        activeRegion = null;
       }
     }
   });
@@ -49,7 +47,6 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
     region.setOptions({ color: randomColor() });
   });
 
-  // Reset activeRegion when interacting with the waveform
   ws.on('interaction', () => {
     activeRegion = null;
   });

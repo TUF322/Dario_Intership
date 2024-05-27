@@ -3,7 +3,7 @@ import { initializeWaveformWithRegions } from './Regions';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
 import RMenu from './RMenu';
-
+import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
@@ -16,12 +16,13 @@ const SpectrogramComponent = ({ audioRef }) => {
   const [isLooping, setIsLooping] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
-  const canvasWidth = 1600; // Set the width of the canvas
-  const canvasHeight = 200; // Set the height of the canvas
-  const backgroundColor = '#ddd'; // Set the background color to white
-  const textColor = 'black'; // Set the text color to black
-  const marginLeft = 60; // Margin for the frequency scale
+  const canvasWidth = 1600; 
+  const canvasHeight = 200;
+  const backgroundColor = '#ddd'; 
+  const textColor = 'black';
+  const marginLeft = 60;
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
@@ -77,7 +78,6 @@ const SpectrogramComponent = ({ audioRef }) => {
         x += barWidth + 1;
       }
 
-      // Draw frequency scale
       drawFrequencyScale(canvasCtx, canvas.height, bufferLength, audioContext.sampleRate);
     };
 
@@ -102,26 +102,28 @@ const SpectrogramComponent = ({ audioRef }) => {
   };
 
   const addRegion = (regionName) => {
-    const start = wavesurferInstance.getCurrentTime();
-    const end = start + 10; // Default length of the region
+    const start = audioRef.current.currentTime;
+    const end = start + 10;
     const region = wavesurferRegions.addRegion({
       start,
       end,
       data: { content: regionName },
-      color: 'rgba(0, 255, 0, 0.3)', // Example color
-      content: regionName, // Display the name directly on the region
+      color: 'rgba(0, 255, 200, 0.3)',
+      content: regionName,
+      
     });
     console.log('Region added:', region);
   };
+  
+  
 
   const deleteRegion = (regionName) => {
-    const regions = wavesurferRegions.getRegions();
+    const regions = wavesurferRegions.list;
     for (const regionId in regions) {
       const region = regions[regionId];
       if (region.data && region.data.content === regionName) {
         console.log('Deleting region:', region);
-        wavesurferInstance.region.remove();
-        region.remove(); // Remove the region
+        region.remove();
         console.log("delete click in spectrogram");
         setWavesurferRegions(prevRegions => {
           const updatedRegions = { ...prevRegions };
@@ -132,11 +134,14 @@ const SpectrogramComponent = ({ audioRef }) => {
       }
     }
   };
-  
-  
+
+  const handleZoom = (level) => {
+    setZoomLevel(level);
+    wavesurferInstance.zoom(level);
+  };
 
   return (
-    <div className=''>
+    <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
       <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
