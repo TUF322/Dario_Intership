@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+
+
 import {
   IoPlayBackSharp,
   IoPlayForwardSharp,
@@ -10,19 +12,33 @@ import {
   IoResize,
 } from 'react-icons/io5';
 
-const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
+const Controls = ({
+  isPlaying,
+  setIsPlaying,
+  wavesurferInstance,
+  wavesurferRegions,
+  isLooping,
+  setIsLooping,
+  audioRef
+}) => {
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [region, setRegion] = useState(null);
-
-  useEffect(() => {
-    if (wavesurferInstance) {
-      if (isPlaying) {
-        wavesurferInstance.play();
+  const [isPaused, setIsPaused] = useState(false);
+  
+  const handlePlayPause = () => {
+    setIsPlaying(prevIsPlaying => {
+      const newIsPlaying = !prevIsPlaying;
+      if (newIsPlaying) {
+        audioRef.current.play();
       } else {
-        wavesurferInstance.pause();
+        audioRef.current.pause();
       }
-    }
-  }, [isPlaying, wavesurferInstance]);
+      return newIsPlaying;
+    });
+  };
+  
+
+  // Rest of your component code...
+
 
   const handleSkipBack = () => {
     if (wavesurferInstance) {
@@ -50,7 +66,7 @@ const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegio
 
   const handleLoopToggle = () => {
     setIsLooping(prevLoop => !prevLoop);
-    
+
     if (wavesurferRegions && wavesurferRegions.list) {
       // Check if there are any existing regions
       if (Object.keys(wavesurferRegions.list).length > 0) {
@@ -62,10 +78,6 @@ const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegio
       }
     }
   };
-  
-  
-  
-  
 
   const handleZoom = () => {
     const newZoomLevel = zoomLevel === 1 ? 2 : 1;
@@ -74,7 +86,7 @@ const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegio
       wavesurferInstance.zoom(newZoomLevel * 100); // Adjust the zoom factor as needed
     }
   };
-
+  
   return (
     <div className="controls-wrapper">
       <div className="controls">
@@ -84,7 +96,7 @@ const Controls = ({ isPlaying, setIsPlaying, wavesurferInstance, wavesurferRegio
         <button onClick={handleSkipBack}>
           <IoPlayBackSharp />
         </button>
-        <button onClick={() => setIsPlaying(!isPlaying)}>
+        <button onClick={handlePlayPause}>
           {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
         </button>
         <button onClick={handleSkipForward}>

@@ -12,6 +12,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
     progressColor: '#0000fe',
     url: audioUrl,
     plugins: [TimelinePlugin.create()],
+    
   });
 
   const wsRegions = ws.registerPlugin(RegionsPlugin.create());
