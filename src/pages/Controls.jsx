@@ -22,6 +22,30 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
     }
   }, [isPlaying, audioRef]);
 
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      if (wavesurferRegions && isLooping) {
+        const currentTime = audioRef.current.currentTime;
+        wavesurferRegions.getRegions().forEach(region => {
+          if (currentTime >= region.end) {
+            audioRef.current.currentTime = region.start;
+          }
+        });
+      }
+    };
+  
+    if (audioRef.current) {
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+  
+      return () => {
+        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }
+  }, [audioRef, isLooping, wavesurferRegions]);
+  
+
+
+
   const handleSkipBack = () => {
     audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
   };
@@ -39,24 +63,42 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
   };
 
   const handleLoopToggle = () => {
-    setIsLooping(prevLoop => !prevLoop);
+    setIsLooping((prevLoop) => !prevLoop);
   
     if (wavesurferRegions) {
-      if (!region) {
-        // Add a new region with loop property set to true
-        const newRegion = wavesurferRegions.addRegion({
-          start: 0, // Example start
-          end: 10,  // Example end
-          loop: isLooping, // Set loop property based on current state
+      if (!Array.isArray(wavesurferRegions)) {
+        // If there's only one region
+        wavesurferRegions.update({
+          loop: !isLooping,
         });
-        setRegion(newRegion);
+        setRegion((prevRegion) => ({
+          ...prevRegion,
+          loop: !isLooping,
+        }));
       } else {
-        // Update the loop property of the existing region
-        region.update({ loop: !isLooping });
+        // If there are multiple regions
+        const region = wavesurferRegions.find((region) => {
+          const currentTime = audioRef.current.currentTime;
+          return currentTime >= region.start && currentTime <= region.end;
+        });
+  
+        if (region) {
+          region.update({
+            loop: !isLooping,
+          });
+          setRegion((prevRegion) => ({
+            ...prevRegion,
+            loop: !isLooping,
+          }));
+        }
       }
     }
   };
   
+  
+  
+  
+
   
 
   const handleZoom = () => {

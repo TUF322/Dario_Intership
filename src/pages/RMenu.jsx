@@ -13,7 +13,6 @@ const RMenu = ({ addRegion, deleteRegion }) => {
   const handleDeleteRegion = () => {
     if (regionName.trim() !== '') {
       deleteRegion(regionName);
-      console.log("delete clicked in RMenu");
       setRegionName(''); // Clear the input after deleting the region
     }
   };
@@ -25,9 +24,14 @@ const RMenu = ({ addRegion, deleteRegion }) => {
         value={regionName}
         onChange={(e) => setRegionName(e.target.value)}
         placeholder="Enter region name"
+        className="border border-gray-300 p-2 rounded"
       />
-      <button onClick={handleAddRegion}>Add Region</button>
-      <button onClick={handleDeleteRegion}>Delete Region</button>
+      <button onClick={handleAddRegion} className="bg-blue-500 text-white px-4 py-2 rounded ml-2">
+        Add Region
+      </button>
+      <button onClick={handleDeleteRegion} className="bg-red-500 text-white px-4 py-2 rounded ml-2">
+        Delete Region
+      </button>
     </div>
   );
 };

@@ -1,9 +1,8 @@
-//AudioPlayer.jsx
 import React, { useRef, useState, useEffect } from 'react';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
-import srcaudio from './AudioPlayerC/test.mp3';
-import Spectrogram from './Spectrogram';
+import srcaudio from './AudioPlayerC/whale.mp3';
+import SpectrogramComponent from './Spectrogram'; // Update import if needed
 import '../index.css';
 
 const AudioPlayer = () => {
@@ -27,14 +26,27 @@ const AudioPlayer = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      const handlePlay = () => setIsPlaying(true);
+      const handlePause = () => setIsPlaying(false);
+
+      audioRef.current.addEventListener('play', handlePlay);
+      audioRef.current.addEventListener('pause', handlePause);
+
+      return () => {
+        audioRef.current.removeEventListener('play', handlePlay);
+        audioRef.current.removeEventListener('pause', handlePause);
+      };
+    }
+  }, [audioRef]);
+
   return (
     <div>
-       
-        <div className='spectrogram-card'><Spectrogram audioRef={audioRef} /></div>
-    
-     
-      <audio ref={audioRef} src={srcaudio}></audio>
-      
+      <div className='spectrogram-card'>
+        <SpectrogramComponent audioRef={audioRef}  />
+      </div>
+      <audio ref={audioRef} src={srcaudio} ></audio>
     </div>
   );
 };
