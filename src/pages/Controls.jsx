@@ -12,7 +12,7 @@ import {
 
 const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [region, setRegion] = useState(null);
+  const [lastRegionPlayed, setLastRegionPlayed] = useState(null); // Define lastRegionPlayed state
 
   useEffect(() => {
     if (isPlaying) {
@@ -26,25 +26,49 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
     const handleTimeUpdate = () => {
       if (wavesurferRegions && isLooping) {
         const currentTime = audioRef.current.currentTime;
-        wavesurferRegions.getRegions().forEach(region => {
-          if (currentTime >= region.end) {
-            audioRef.current.currentTime = region.start;
+        const regions = wavesurferRegions.getRegions ? Object.values(wavesurferRegions.getRegions()) : [];
+
+        let currentRegion = null;
+        for (let i = 0; i < regions.length; i++) {
+          const region = regions[i];
+          if (currentTime >= region.start && currentTime <= region.end) {
+            currentRegion = region;
+            break;
           }
-        });
+        }
+
+        if (currentRegion) {
+          console.log('Entered region:', currentRegion);
+          console.log('Region start time:', currentRegion.start);
+          console.log('Region end time:', currentRegion.end);
+          setLastRegionPlayed(currentRegion); // Update lastRegionPlayed
+
+          if (currentTime >= currentRegion.end) {
+            // Find the index of the current region in the array of regions
+            const currentIndex = regions.findIndex(region => region.id === currentRegion.id);
+            if (currentIndex !== -1) {
+              const nextIndex = (currentIndex + 1) % regions.length; // Calculate the index of the next region
+              const nextRegion = regions[nextIndex];
+              audioRef.current.currentTime = nextRegion.start; // Reset to the start of the next region
+            }
+          }
+        } else if (lastRegionPlayed) {
+          // If not in any region, start from the last played region
+          audioRef.current.currentTime = lastRegionPlayed.start;
+        } else if (regions.length > 0) {
+          audioRef.current.currentTime = regions[0].start; // If no region has been played yet, start from the first region
+        }
       }
     };
-  
+
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-  
+
       return () => {
         audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
       };
     }
-  }, [audioRef, isLooping, wavesurferRegions]);
-  
-
-
+  }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
 
   const handleSkipBack = () => {
     audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
@@ -64,42 +88,7 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
 
   const handleLoopToggle = () => {
     setIsLooping((prevLoop) => !prevLoop);
-  
-    if (wavesurferRegions) {
-      if (!Array.isArray(wavesurferRegions)) {
-        // If there's only one region
-        wavesurferRegions.update({
-          loop: !isLooping,
-        });
-        setRegion((prevRegion) => ({
-          ...prevRegion,
-          loop: !isLooping,
-        }));
-      } else {
-        // If there are multiple regions
-        const region = wavesurferRegions.find((region) => {
-          const currentTime = audioRef.current.currentTime;
-          return currentTime >= region.start && currentTime <= region.end;
-        });
-  
-        if (region) {
-          region.update({
-            loop: !isLooping,
-          });
-          setRegion((prevRegion) => ({
-            ...prevRegion,
-            loop: !isLooping,
-          }));
-        }
-      }
-    }
   };
-  
-  
-  
-  
-
-  
 
   const handleZoom = () => {
     const newZoomLevel = zoomLevel === 1 ? 2 : 1;
