@@ -44,9 +44,11 @@ const AudioPlayer = () => {
   return (
     <div>
       <div className='spectrogram-card'>
+
         <SpectrogramComponent audioRef={audioRef}  />
       </div>
       <audio ref={audioRef} src={srcaudio} ></audio>
+
     </div>
   );
 };
