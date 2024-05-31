@@ -6,14 +6,14 @@ const RMenu = ({ addRegion, deleteRegion }) => {
   const handleAddRegion = () => {
     if (regionName.trim() !== '') {
       addRegion(regionName);
-      setRegionName(''); // Clear the input after creating the region
+      setRegionName('');
     }
   };
 
   const handleDeleteRegion = () => {
     if (regionName.trim() !== '') {
       deleteRegion(regionName);
-      setRegionName(''); // Clear the input after deleting the region
+      setRegionName('');
     }
   };
 

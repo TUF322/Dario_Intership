@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { initializeWaveformWithRegions } from './Regions';
 import Controls from './Controls';
 import RMenu from './RMenu';
-
+import ProgressBar from './ProgressBar';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
@@ -16,11 +16,11 @@ const SpectrogramComponent = ({ audioRef }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const canvasWidth = 1600; // Set the width of the canvas
-  const canvasHeight = 200; // Set the height of the canvas
-  const backgroundColor = '#ddd'; // Set the background color to white
-  const textColor = 'black'; // Set the text color to black
-  const marginLeft = 60; // Margin for the frequency scale
+  const canvasWidth = 1600;
+  const canvasHeight = 200;
+  const backgroundColor = '#ddd';
+  const textColor = 'black';
+  const marginLeft = 60;
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
@@ -76,7 +76,6 @@ const SpectrogramComponent = ({ audioRef }) => {
         x += barWidth + 1;
       }
 
-      // Draw frequency scale
       drawFrequencyScale(canvasCtx, canvas.height, bufferLength, audioContext.sampleRate);
     };
 
@@ -100,37 +99,48 @@ const SpectrogramComponent = ({ audioRef }) => {
     }
   };
 
-  const addRegion = (regionName) => {
-    if (wavesurferRegions) {
-      const start = wavesurferInstance.getCurrentTime();
-      const end = start + 10; // Default length of the region
-      const region = wavesurferRegions.addRegion({
-        start,
-        end,
-        data: { content: regionName },
-        color: 'rgba(0, 255, 0, 0.3)', // Example color
-        content: regionName, // Display the name directly on the region
-      });
-      console.log('Region added:', region);
-    }
-  };
+const addRegion = (regionName) => {
+  if (wavesurferRegions) {
+    const start = wavesurferInstance.getCurrentTime();
+    const end = start + 10;
+    const region = wavesurferRegions.addRegion({
+      start,
+      end,
+      data: {}, // Initialize the data object
+      color: 'rgba(0, 255, 0, 0.3)',
+    });
+    region.data = { ...region.data, content: regionName }; // Set the content property
+    console.log('Region added:', region);
+    console.log('Region content:', region.data.content);
+  }
+};
+
+  
+  
+  
+  
 
   const deleteRegion = (regionName) => {
     if (wavesurferRegions) {
       const regions = wavesurferRegions.getRegions();
+      console.log('Current regions:', regions);
+      let regionFound = false;
       for (const regionId in regions) {
         const region = regions[regionId];
+        console.log('Checking region:', region);
+        console.log('Region data:', region.data);
+
         if (region.data && region.data.content === regionName) {
           console.log('Deleting region:', region);
-          region.remove(); // Remove the region
-          setWavesurferRegions(prevRegions => {
-            const updatedRegions = { ...prevRegions };
-            delete updatedRegions[regionId];
-            return updatedRegions;
-          });
+          region.remove();
+          regionFound = true;
           break;
         }
       }
+      if (!regionFound) {
+        console.log(`Region with name "${regionName}" not found.`);
+      }
+      console.log('Regions after deletion attempt:', wavesurferRegions.getRegions());
     }
   };
 
@@ -139,6 +149,7 @@ const SpectrogramComponent = ({ audioRef }) => {
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
       <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
+      <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       <Controls
         isPlaying={isPlaying}
         setIsPlaying={setIsPlaying}
