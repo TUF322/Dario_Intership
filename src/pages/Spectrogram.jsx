@@ -99,25 +99,37 @@ const SpectrogramComponent = ({ audioRef }) => {
     }
   };
 
-const addRegion = (regionName) => {
-  if (wavesurferRegions) {
-    const start = wavesurferInstance.getCurrentTime();
-    const end = start + 10;
-    const region = wavesurferRegions.addRegion({
-      start,
-      end,
-      data: {}, // Initialize the data object
-      color: 'rgba(0, 255, 0, 0.3)',
-    });
-    region.data = { ...region.data, content: regionName }; // Set the content property
-    console.log('Region added:', region);
-    console.log('Region content:', region.data.content);
-  }
-};
+  const addRegion = (regionName) => {
+    if (wavesurferRegions) {
+      // Check if a region with the same content already exists
+      const existingRegion = wavesurferRegions.getRegions().find(region => region.data && region.data.content === regionName);
+      if (existingRegion) {
+        console.log(`Region with name "${regionName}" already exists.`);
+        return; // Exit the function if a region with the same content exists
+      }
+  
+      // If no existing region found, proceed to add the new region
+      const start = wavesurferInstance.getCurrentTime();
+      const end = start + 10;
+      const region = wavesurferRegions.addRegion({
+        start,
+        end,
+        data: {}, // Initialize the data object
+        color: 'rgba(0, 255, 0, 0.3)',
+        content: regionName
+      });
+  
+      // Set the content property
+      region.data = { ...region.data, content: regionName }; 
+  
+      console.log('Region added:', region);
+      console.log('Region content:', region.data ? region.data.content : 'No content');
+  
+    }
+  };
+  
+  
 
-  
-  
-  
   
 
   const deleteRegion = (regionName) => {
