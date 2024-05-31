@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   IoPlayBackSharp,
   IoPlayForwardSharp,
@@ -9,10 +9,12 @@ import {
   IoRepeat,
   IoResize,
 } from 'react-icons/io5';
+import PropTypes from 'prop-types';
 
-const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
+const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [lastRegionPlayed, setLastRegionPlayed] = useState(null); // Define lastRegionPlayed state
+  const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
+  const zoomRef = useRef(null);
 
   useEffect(() => {
     if (isPlaying) {
@@ -22,45 +24,40 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
     }
   }, [isPlaying, audioRef]);
 
-  useEffect(() => {
-    const handleTimeUpdate = () => {
-      if (wavesurferRegions && isLooping) {
-        const currentTime = audioRef.current.currentTime;
-        const regions = wavesurferRegions.getRegions ? Object.values(wavesurferRegions.getRegions()) : [];
+  const handleTimeUpdate = useCallback(() => {
+    if (wavesurferRegions && isLooping) {
+      const currentTime = audioRef.current.currentTime;
+      const regions = wavesurferRegions.getRegions ? Object.values(wavesurferRegions.getRegions()) : [];
 
-        let currentRegion = null;
-        for (let i = 0; i < regions.length; i++) {
-          const region = regions[i];
-          if (currentTime >= region.start && currentTime <= region.end) {
-            currentRegion = region;
-            break;
-          }
-        }
-
-        if (currentRegion) {
-          console.log('Entered region:', currentRegion);
-          console.log('Region start time:', currentRegion.start);
-          console.log('Region end time:', currentRegion.end);
-          setLastRegionPlayed(currentRegion); // Update lastRegionPlayed
-
-          if (currentTime >= currentRegion.end) {
-            // Find the index of the current region in the array of regions
-            const currentIndex = regions.findIndex(region => region.id === currentRegion.id);
-            if (currentIndex !== -1) {
-              const nextIndex = (currentIndex + 1) % regions.length; // Calculate the index of the next region
-              const nextRegion = regions[nextIndex];
-              audioRef.current.currentTime = nextRegion.start; // Reset to the start of the next region
-            }
-          }
-        } else if (lastRegionPlayed) {
-          // If not in any region, start from the last played region
-          audioRef.current.currentTime = lastRegionPlayed.start;
-        } else if (regions.length > 0) {
-          audioRef.current.currentTime = regions[0].start; // If no region has been played yet, start from the first region
+      let currentRegion = null;
+      for (let i = 0; i < regions.length; i++) {
+        const region = regions[i];
+        if (currentTime >= region.start && currentTime <= region.end) {
+          currentRegion = region;
+          break;
         }
       }
-    };
 
+      if (currentRegion) {
+        setLastRegionPlayed(currentRegion);
+
+        if (currentTime >= currentRegion.end) {
+          const currentIndex = regions.findIndex(region => region.id === currentRegion.id);
+          if (currentIndex !== -1) {
+            const nextIndex = (currentIndex + 1) % regions.length;
+            const nextRegion = regions[nextIndex];
+            audioRef.current.currentTime = nextRegion.start;
+          }
+        }
+      } else if (lastRegionPlayed) {
+        audioRef.current.currentTime = lastRegionPlayed.start;
+      } else if (regions.length > 0) {
+        audioRef.current.currentTime = regions[0].start;
+      }
+    }
+  }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
+
+  useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
 
@@ -68,35 +65,29 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
         audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
       };
     }
-  }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
+  }, [audioRef, handleTimeUpdate]);
 
-  const handleSkipBack = () => {
+  const handleSkipBack = useCallback(() => {
     audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
-  };
+  }, [audioRef]);
 
-  const handleSkipForward = () => {
+  const handleSkipForward = useCallback(() => {
     audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
-  };
+  }, [audioRef]);
 
-  const handleSkipBack30 = () => {
+  const handleSkipBack30 = useCallback(() => {
     audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 30);
-  };
+  }, [audioRef]);
 
-  const handleSkipForward30 = () => {
+  const handleSkipForward30 = useCallback(() => {
     audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
-  };
+  }, [audioRef]);
 
-  const handleLoopToggle = () => {
+  const handleLoopToggle = useCallback(() => {
     setIsLooping((prevLoop) => !prevLoop);
-  };
+  }, [setIsLooping]);
 
-  const handleZoom = () => {
-    const newZoomLevel = zoomLevel === 1 ? 2 : 1;
-    setZoomLevel(newZoomLevel);
-    if (wavesurferInstance) {
-      wavesurferInstance.zoom(newZoomLevel * 100); // Adjust the zoom factor as needed
-    }
-  };
+  
 
   return (
     <div className="controls-wrapper">
@@ -119,12 +110,20 @@ const Controls = ({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, waves
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
-        <button onClick={handleZoom}>
-          <IoResize />
-        </button>
+        
       </div>
     </div>
   );
+});
+
+Controls.propTypes = {
+  isPlaying: PropTypes.bool.isRequired,
+  setIsPlaying: PropTypes.func.isRequired,
+  audioRef: PropTypes.object.isRequired,
+  wavesurferInstance: PropTypes.object.isRequired,
+  wavesurferRegions: PropTypes.object,
+  isLooping: PropTypes.bool.isRequired,
+  setIsLooping: PropTypes.func.isRequired,
 };
 
 export default Controls;

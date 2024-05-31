@@ -101,36 +101,28 @@ const SpectrogramComponent = ({ audioRef }) => {
 
   const addRegion = (regionName) => {
     if (wavesurferRegions) {
-      // Check if a region with the same content already exists
       const existingRegion = wavesurferRegions.getRegions().find(region => region.data && region.data.content === regionName);
       if (existingRegion) {
         console.log(`Region with name "${regionName}" already exists.`);
-        return; // Exit the function if a region with the same content exists
+        return;
       }
   
-      // If no existing region found, proceed to add the new region
       const start = wavesurferInstance.getCurrentTime();
       const end = start + 10;
       const region = wavesurferRegions.addRegion({
         start,
         end,
-        data: {}, // Initialize the data object
+        data: {},
         color: 'rgba(0, 255, 0, 0.3)',
         content: regionName
       });
   
-      // Set the content property
       region.data = { ...region.data, content: regionName }; 
   
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
-  
     }
   };
-  
-  
-
-  
 
   const deleteRegion = (regionName) => {
     if (wavesurferRegions) {
@@ -162,15 +154,17 @@ const SpectrogramComponent = ({ audioRef }) => {
       <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
-      <Controls
-        isPlaying={isPlaying}
-        setIsPlaying={setIsPlaying}
-        audioRef={audioRef}
-        wavesurferInstance={wavesurferInstance}
-        wavesurferRegions={wavesurferRegions}
-        isLooping={isLooping}
-        setIsLooping={setIsLooping}
-      />
+      {wavesurferInstance && wavesurferRegions && (
+        <Controls
+          isPlaying={isPlaying}
+          setIsPlaying={setIsPlaying}
+          audioRef={audioRef}
+          wavesurferInstance={wavesurferInstance}
+          wavesurferRegions={wavesurferRegions}
+          isLooping={isLooping}
+          setIsLooping={setIsLooping}
+        />
+      )}
     </div>
   );
 };
