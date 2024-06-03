@@ -14,7 +14,6 @@ import PropTypes from 'prop-types';
 const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
-  const zoomRef = useRef(null);
 
   useEffect(() => {
     if (isPlaying) {
@@ -87,7 +86,26 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     setIsLooping((prevLoop) => !prevLoop);
   }, [setIsLooping]);
 
-  
+  const handleZoomToggle = useCallback(() => {
+    setZoomLevel((prevZoom) => {
+      const newZoom = (prevZoom % 3) + 1;
+      switch (newZoom) {
+        case 1:
+          wavesurferInstance.zoom(1); // Normal zoom
+          break;
+        case 2:
+          wavesurferInstance.zoom(800); // 800 px zoom
+          break;
+        case 3:
+          wavesurferInstance.zoom(1500); // 1500 px zoom
+          break;
+        default:
+          wavesurferInstance.zoom(1);
+          break;
+      }
+      return newZoom;
+    });
+  }, [wavesurferInstance]);
 
   return (
     <div className="controls-wrapper">
@@ -110,7 +128,9 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
-        
+        <button onClick={handleZoomToggle}>
+          <IoResize />
+        </button>
       </div>
     </div>
   );
