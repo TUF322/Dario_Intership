@@ -27,7 +27,6 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     if (wavesurferRegions && isLooping) {
       const currentTime = audioRef.current.currentTime;
       const regions = wavesurferRegions.getRegions ? Object.values(wavesurferRegions.getRegions()) : [];
-
       let currentRegion = null;
       for (let i = 0; i < regions.length; i++) {
         const region = regions[i];
@@ -36,10 +35,8 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
           break;
         }
       }
-
       if (currentRegion) {
         setLastRegionPlayed(currentRegion);
-
         if (currentTime >= currentRegion.end) {
           const currentIndex = regions.findIndex(region => region.id === currentRegion.id);
           if (currentIndex !== -1) {
@@ -55,11 +52,13 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
       }
     }
   }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
+  
+  
+  
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-
       return () => {
         audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
       };
@@ -86,14 +85,13 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     setIsLooping((prevLoop) => !prevLoop);
   }, [setIsLooping]);
 
-  const handleZoom = useCallback(() => {
-    const newZoomLevel = zoomLevel === 1 ? 9 : 1;
-    setZoomLevel(newZoomLevel);
+  const handleZoom = useCallback((zoomValue) => {
+    setZoomLevel(zoomValue);
     if (wavesurferInstance) {
-      wavesurferInstance.zoom(newZoomLevel * 100); // Adjust the zoom factor as needed
+      wavesurferInstance.zoom(zoomValue);
       wavesurferInstance.setOptions({ autoCenter: true, scrollParent: true });
     }
-  }, [zoomLevel, wavesurferInstance]);
+  }, [wavesurferInstance]);
 
   return (
     <div className="controls-wrapper">
@@ -116,10 +114,16 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
-        <button onClick={handleZoom}>
-          <IoResize />
-        </button>
+        <input
+          type="range"
+          min="10"
+          max="1500"
+          value={zoomLevel}
+          onChange={(e) => handleZoom(e.target.valueAsNumber)}
+
+        />
       </div>
+      <div id="wave-timeline"></div>
     </div>
   );
 });
