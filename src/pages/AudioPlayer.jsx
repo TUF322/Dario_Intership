@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Controls from './Controls';
 import ProgressBar from './ProgressBar';
-import srcaudio from './AudioPlayerC/music.mp3';
+import srcaudio from './AudioPlayerC/whale.mp3';
 import SpectrogramComponent from './Spectrogram'; // Update import if needed
 import '../index.css';
 
@@ -46,7 +46,7 @@ const AudioPlayer = () => {
       <div className='spectrogram-card'>
         <SpectrogramComponent audioRef={audioRef}  />
       </div>
-      <audio ref={audioRef} src={srcaudio} ></audio>
+      <audio ref={audioRef} src={srcaudio}  ></audio>
     </div>
   );
 };

@@ -86,26 +86,14 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     setIsLooping((prevLoop) => !prevLoop);
   }, [setIsLooping]);
 
-  const handleZoomToggle = useCallback(() => {
-    setZoomLevel((prevZoom) => {
-      const newZoom = (prevZoom % 3) + 1;
-      switch (newZoom) {
-        case 1:
-          wavesurferInstance.zoom(1); // Normal zoom
-          break;
-        case 2:
-          wavesurferInstance.zoom(800); // 800 px zoom
-          break;
-        case 3:
-          wavesurferInstance.zoom(1500); // 1500 px zoom
-          break;
-        default:
-          wavesurferInstance.zoom(1);
-          break;
-      }
-      return newZoom;
-    });
-  }, [wavesurferInstance]);
+  const handleZoom = useCallback(() => {
+    const newZoomLevel = zoomLevel === 1 ? 9 : 1;
+    setZoomLevel(newZoomLevel);
+    if (wavesurferInstance) {
+      wavesurferInstance.zoom(newZoomLevel * 100); // Adjust the zoom factor as needed
+      wavesurferInstance.setOptions({ autoCenter: true, scrollParent: true });
+    }
+  }, [zoomLevel, wavesurferInstance]);
 
   return (
     <div className="controls-wrapper">
@@ -128,7 +116,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
-        <button onClick={handleZoomToggle}>
+        <button onClick={handleZoom}>
           <IoResize />
         </button>
       </div>
