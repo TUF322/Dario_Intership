@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   IoPlayBackSharp,
   IoPlayForwardSharp,
@@ -7,54 +7,59 @@ import {
   IoPlaySharp,
   IoPauseSharp,
   IoRepeat,
+  IoResize,
 } from 'react-icons/io5';
 import PropTypes from 'prop-types';
 
-const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, isLooping, setIsLooping }) => {
-  const [zoomLevel, setZoomLevel] = useState(100);
+const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
 
   useEffect(() => {
     if (isPlaying) {
-      wavesurferInstance.play();
+      audioRef.current.play();
     } else {
-      wavesurferInstance.pause();
+      audioRef.current.pause();
     }
-  }, [isPlaying, wavesurferInstance]);
+  }, [isPlaying, audioRef]);
 
   const handleTimeUpdate = useCallback(() => {
-    if (wavesurferInstance && isLooping) {
-      const currentTime = wavesurferInstance.getCurrentTime();
-      const regions = wavesurferInstance.regions.list;
+    if (wavesurferRegions && isLooping) {
+      const currentTime = audioRef.current.currentTime;
+      const regions = wavesurferRegions.getRegions ? Object.values(wavesurferRegions.getRegions()) : [];
+
       let currentRegion = null;
-      for (let key in regions) {
-        const region = regions[key];
+      for (let i = 0; i < regions.length; i++) {
+        const region = regions[i];
         if (currentTime >= region.start && currentTime <= region.end) {
           currentRegion = region;
           break;
         }
       }
+
       if (currentRegion) {
         setLastRegionPlayed(currentRegion);
+
         if (currentTime >= currentRegion.end) {
-          const keys = Object.keys(regions);
-          const currentIndex = keys.indexOf(currentRegion.id);
-          const nextIndex = (currentIndex + 1) % keys.length;
-          const nextRegion = regions[keys[nextIndex]];
-          wavesurferInstance.seekTo(nextRegion.start / wavesurferInstance.getDuration());
+          const currentIndex = regions.findIndex(region => region.id === currentRegion.id);
+          if (currentIndex !== -1) {
+            const nextIndex = (currentIndex + 1) % regions.length;
+            const nextRegion = regions[nextIndex];
+            audioRef.current.currentTime = nextRegion.start;
+          }
         }
       } else if (lastRegionPlayed) {
-        wavesurferInstance.seekTo(lastRegionPlayed.start / wavesurferInstance.getDuration());
-      } else if (Object.keys(regions).length > 0) {
-        const firstRegion = regions[Object.keys(regions)[0]];
-        wavesurferInstance.seekTo(firstRegion.start / wavesurferInstance.getDuration());
+        audioRef.current.currentTime = lastRegionPlayed.start;
+      } else if (regions.length > 0) {
+        audioRef.current.currentTime = regions[0].start;
       }
     }
-  }, [isLooping, wavesurferInstance, lastRegionPlayed]);
+  }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+
       return () => {
         audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
       };
@@ -62,20 +67,20 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
   }, [audioRef, handleTimeUpdate]);
 
   const handleSkipBack = useCallback(() => {
-    wavesurferInstance.skipBackward(10);
-  }, [wavesurferInstance]);
+    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
+  }, [audioRef]);
 
   const handleSkipForward = useCallback(() => {
-    wavesurferInstance.skipForward(10);
-  }, [wavesurferInstance]);
+    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
+  }, [audioRef]);
 
   const handleSkipBack30 = useCallback(() => {
-    wavesurferInstance.skipBackward(30);
-  }, [wavesurferInstance]);
+    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 30);
+  }, [audioRef]);
 
   const handleSkipForward30 = useCallback(() => {
-    wavesurferInstance.skipForward(30);
-  }, [wavesurferInstance]);
+    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
+  }, [audioRef]);
 
   const handleLoopToggle = useCallback(() => {
     setIsLooping((prevLoop) => !prevLoop);
@@ -117,7 +122,6 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
           onChange={(e) => handleZoom(e.target.valueAsNumber)}
         />
       </div>
-      <div id="wave-timeline"></div>
     </div>
   );
 });
@@ -127,6 +131,7 @@ Controls.propTypes = {
   setIsPlaying: PropTypes.func.isRequired,
   audioRef: PropTypes.object.isRequired,
   wavesurferInstance: PropTypes.object.isRequired,
+  wavesurferRegions: PropTypes.object,
   isLooping: PropTypes.bool.isRequired,
   setIsLooping: PropTypes.func.isRequired,
 };
