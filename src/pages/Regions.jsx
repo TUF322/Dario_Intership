@@ -17,12 +17,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
 
   const wsRegions = ws.registerPlugin(RegionsPlugin.create());
 
-  ws.on('ready', () => {
-    // Enable drag selection
-    wsRegions.enableDragSelection({
-      color: 'rgba(255, 0, 0, 0.1)',
-    });
-  });
+
 
   let activeRegion = null;
 

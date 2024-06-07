@@ -5,7 +5,6 @@ import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
-import { throttle } from 'lodash'; // Import lodash throttle function
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
@@ -22,18 +21,16 @@ const SpectrogramComponent = ({ audioRef }) => {
   const backgroundColor = '#ddd';
   const textColor = 'black';
   const marginLeft = 60;
-  const threshold = 10;
+  const threshold = 10; // Define an appropriate threshold
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
     setWavesurferInstance(ws);
     setWavesurferRegions(wsRegions);
 
-    const throttledSetCurrentTime = throttle(() => {
+    ws.on('audioprocess', () => {
       setCurrentTime(ws.getCurrentTime());
-    }, 100); // Throttle updates to 100ms
-
-    ws.on('audioprocess', throttledSetCurrentTime);
+    });
 
     ws.on('ready', () => {
       setDuration(ws.getDuration());
