@@ -10,6 +10,22 @@ import {
   IoResize,
 } from 'react-icons/io5';
 import PropTypes from 'prop-types';
+import styled from "styled-components";
+
+const Container = styled.section`
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+  border-radius: 15px;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 24px;
+  }
+`;
 
 const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -66,57 +82,41 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   }, [audioRef, handleTimeUpdate]);
 
-  const handleSkipBack = useCallback(() => {
-    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
-  }, [audioRef]);
-
-  const handleSkipForward = useCallback(() => {
-    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 10);
-  }, [audioRef]);
-
-  const handleSkipBack30 = useCallback(() => {
-    audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 30);
-  }, [audioRef]);
-
-  const handleSkipForward30 = useCallback(() => {
-    audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + 30);
-  }, [audioRef]);
+  const handleControlClick = (val, forward= false) => {
+    if (forward) {
+      audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + val);
+    } else {
+      audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - val);
+    }
+  }
 
   const handleLoopToggle = useCallback(() => {
     setIsLooping((prevLoop) => !prevLoop);
   }, [setIsLooping]);
 
   const handleZoom = (zoomValue) => {
-    console.log(zoomLevel)
     setZoomLevel(zoomValue);
     if (wavesurferInstance) {
       wavesurferInstance.zoom(zoomValue);
     }
   };
 
-  // const handleZoom = useCallback((zoomValue) => {
-  //   setZoomLevel(zoomValue);
-  //   if (wavesurferInstance) {
-  //     wavesurferInstance.zoom(zoomValue);
-  //   }
-  // }, [wavesurferInstance]);
-
   return (
-    <div className="controls-wrapper">
-      <div className="controls">
-        <button onClick={handleSkipBack30}>
+    <Container>
+
+        <button onClick={() => handleControlClick(30)}>
           <IoPlaySkipBackSharp />
         </button>
-        <button onClick={handleSkipBack}>
+        <button onClick={() => handleControlClick(10)}>
           <IoPlayBackSharp />
         </button>
         <button onClick={() => setIsPlaying(!isPlaying)}>
           {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
         </button>
-        <button onClick={handleSkipForward}>
+        <button onClick={() => handleControlClick(10, true)}>
           <IoPlayForwardSharp />
         </button>
-        <button onClick={handleSkipForward30}>
+        <button onClick={() => handleControlClick(30, true)}>
           <IoPlaySkipForwardSharp />
         </button>
         <button onClick={handleLoopToggle}>
@@ -125,12 +125,12 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <input
           type="range"
           min="0"
-          max="1500"
+          max="1200"
           value={zoomLevel}
           onChange={(e) => handleZoom(e.target.valueAsNumber)}
         />
-      </div>
-    </div>
+
+    </Container>
   );
 });
 

@@ -16,95 +16,14 @@ html, body {
   border-radius: 15px;
 }
 
-.audio-player {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-  width: 94vw;
-  height: 100%;
-  border-radius: 15px;
-}
-
-.audio-player audio {
-  display: none;
-}
-
-.controls-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-  border-radius: 15px;
-}
-
-.controls button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  font-size: 24px;
-}
-
-.progress-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-top: 50px;
-  border-radius: 15px;
-}
-
-.progress-bar {
-  cursor: pointer;
-  position: relative;
-  flex-grow: 1;
-  height: 10px;
-  background-color: #ddd;
-  margin: 0 10px;
-  overflow: hidden;
-}
-
-.progress-bar div {
-  height: 100%;
-  background-color: #000;
-  transition: width 0.1s ease;
-}
-
-.progress-time {
-  font-size: 14px;
-  width: 40px;
-  text-align: center;
-}
-
 .spectrogram-card {
   padding-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 15px;
   margin-top: 20px;
+  width: 90vw;
 }
 
-.spectrogram-container {
-  width: 96vw;
-  height: 200px;
-  margin-bottom: 20px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  border-radius: 15px;
-}
-
-.inner {
-  width: 95vw;
-}
-
-.audio-analizer {
-  width: 96vw;
-  height: 400px;
-  background-color: #fff;
-  color: #000;
-  margin-top: 25px;
-  font-size: large;
-}
 
 .spectrogram-card, .spectrogram-container, .audio-analizer, .progress-bar div {
   transition: all 0.3s ease;

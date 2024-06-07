@@ -5,6 +5,7 @@ import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
+import WavesurferPlayer from '@wavesurfer/react'
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
@@ -14,6 +15,8 @@ const SpectrogramComponent = ({ audioRef }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  const [wavesurfer, setWavesurfer] = useState(null)
+
   const [duration, setDuration] = useState(0);
 
   const canvasWidth = 1600;
@@ -154,11 +157,28 @@ const SpectrogramComponent = ({ audioRef }) => {
     }
   };
 
+  const onReady = (ws) => {
+    setWavesurfer(ws)
+    setIsPlaying(false)
+  }
+
+
   return (
     <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
-      <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
-      <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
+      <WavesurferPlayer
+        ref={canvasRef}
+        height={100}
+        waveColor="violet"
+        url={audioRef}
+        onReady={onReady}
+        className='audio-analyzer'
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        style={{ marginTop: '25px', width: '96vw' }}
+      />
+      {/* <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
+      <RMenu addRegion={addRegion} deleteRegion={deleteRegion} /> */}
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       {wavesurferInstance && wavesurferRegions && (
         <Controls
