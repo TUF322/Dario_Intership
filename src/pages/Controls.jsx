@@ -86,12 +86,20 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     setIsLooping((prevLoop) => !prevLoop);
   }, [setIsLooping]);
 
-  const handleZoom = useCallback((zoomValue) => {
+  const handleZoom = (zoomValue) => {
+    console.log(zoomLevel)
     setZoomLevel(zoomValue);
     if (wavesurferInstance) {
       wavesurferInstance.zoom(zoomValue);
     }
-  }, [wavesurferInstance]);
+  };
+
+  // const handleZoom = useCallback((zoomValue) => {
+  //   setZoomLevel(zoomValue);
+  //   if (wavesurferInstance) {
+  //     wavesurferInstance.zoom(zoomValue);
+  //   }
+  // }, [wavesurferInstance]);
 
   return (
     <div className="controls-wrapper">

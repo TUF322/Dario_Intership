@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 const formatTime = (time) => {
   const minutes = Math.floor(time / 60);
@@ -9,13 +9,13 @@ const formatTime = (time) => {
 const ProgressBar = ({ currentTime, duration, audioRef }) => {
   const progressPercentage = (currentTime / duration) * 100;
 
-  const handleProgressClick = (e) => {
+  const handleProgressClick = useCallback((e) => {
     const progress = e.currentTarget;
     const rect = progress.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
     const newTime = (offsetX / rect.width) * duration;
     audioRef.current.currentTime = newTime;
-  };
+  }, [duration, audioRef]);
 
   return (
     <div className="progress-container">

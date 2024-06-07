@@ -5,6 +5,7 @@ import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
+import { throttle } from 'lodash'; // Import lodash throttle function
 
 const SpectrogramComponent = ({ audioRef }) => {
   const waveformRef = useRef(null);
@@ -21,15 +22,18 @@ const SpectrogramComponent = ({ audioRef }) => {
   const backgroundColor = '#ddd';
   const textColor = 'black';
   const marginLeft = 60;
+  const threshold = 10;
 
   useEffect(() => {
     const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
     setWavesurferInstance(ws);
     setWavesurferRegions(wsRegions);
 
-    ws.on('audioprocess', () => {
+    const throttledSetCurrentTime = throttle(() => {
       setCurrentTime(ws.getCurrentTime());
-    });
+    }, 100); // Throttle updates to 100ms
+
+    ws.on('audioprocess', throttledSetCurrentTime);
 
     ws.on('ready', () => {
       setDuration(ws.getDuration());
@@ -62,6 +66,11 @@ const SpectrogramComponent = ({ audioRef }) => {
       requestAnimationFrame(drawSpectrogram);
       analyser.getByteFrequencyData(dataArray);
 
+      const maxChange = Math.max(...dataArray) - Math.min(...dataArray);
+      if (maxChange < threshold) {
+        return;
+      }
+
       canvasCtx.fillStyle = backgroundColor;
       canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -71,7 +80,7 @@ const SpectrogramComponent = ({ audioRef }) => {
 
       for (let i = 0; i < bufferLength; i++) {
         barHeight = dataArray[i];
-        canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',0,255)';
+        canvasCtx.fillStyle = `rgb(${barHeight + 100},0,255)`;
         canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
         x += barWidth + 1;
       }
@@ -94,7 +103,7 @@ const SpectrogramComponent = ({ audioRef }) => {
       const frequencyInKHz = (frequency / 1000).toFixed(1);
       if (frequency % 1000 === 0 && ![21.0, 18.0].includes(parseFloat(frequencyInKHz))) {
         const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-        canvasCtx.fillText(frequencyInKHz + ' kHz', 10, y);
+        canvasCtx.fillText(`${frequencyInKHz} kHz`, 10, y);
       }
     }
   };
@@ -106,7 +115,7 @@ const SpectrogramComponent = ({ audioRef }) => {
         console.log(`Region with name "${regionName}" already exists.`);
         return;
       }
-  
+
       const start = wavesurferInstance.getCurrentTime();
       const end = start + 10;
       const region = wavesurferRegions.addRegion({
@@ -116,9 +125,9 @@ const SpectrogramComponent = ({ audioRef }) => {
         color: 'rgba(0, 255, 0, 0.3)',
         content: regionName
       });
-  
-      region.data = { ...region.data, content: regionName }; 
-  
+
+      region.data = { ...region.data, content: regionName };
+
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
     }
@@ -149,7 +158,7 @@ const SpectrogramComponent = ({ audioRef }) => {
   };
 
   return (
-    <div className=''>
+    <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
       <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
