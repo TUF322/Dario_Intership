@@ -177,8 +177,8 @@ const SpectrogramComponent = ({ audioRef }) => {
         onPause={() => setIsPlaying(false)}
         style={{ marginTop: '25px', width: '96vw' }}
       />
-      {/* <canvas ref={canvasRef} width={canvasWidth} height={canvasHeight} className='audio-analyzer' style={{ marginTop: '25px', width: '96vw' }}></canvas>
-      <RMenu addRegion={addRegion} deleteRegion={deleteRegion} /> */}
+      <canvas className="canvas" ref={canvasRef} width={canvasWidth} height={canvasHeight}  style={{ marginTop: '25px', width: '90vw' }}></canvas>
+      <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       {wavesurferInstance && wavesurferRegions && (
         <Controls
