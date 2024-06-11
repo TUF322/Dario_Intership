@@ -1,36 +1,24 @@
 import React, { useCallback } from 'react';
-import styled from "styled-components";
+import styled from 'styled-components';
 
-const Bar = styled.div`
-  cursor: pointer;
-  position: relative;
-  flex-grow: 1;
-  height: 10px;
-  background-color: #ddd;
-  margin: 0 10px;
-  overflow: hidden;
-
-  div {
-    height: 100%;
-    background-color: #000;
-    transition: width 0.1s ease;
-  }
-`;
-
-const Container = styled.section`
+const Container = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
-  margin-top: 50px;
-  border-radius: 15px;
 `;
 
-const Time = styled.div`
-  font-size: 14px;
-  width: 40px;
-  text-align: center;
+const Bar = styled.div`
+  flex: 1;
+  height: 10px;
+  background-color: #ccc;
+  cursor: pointer;
+  position: relative;
 `;
 
+const Time = styled.span`
+  margin: 0 10px;
+`;
 
 const formatTime = (time) => {
   const minutes = Math.floor(time / 60);

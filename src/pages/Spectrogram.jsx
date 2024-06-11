@@ -3,11 +3,9 @@ import { initializeWaveformWithRegions } from './Regions';
 import Controls from './Controls';
 import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
-import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
-import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
-import WavesurferPlayer from '@wavesurfer/react'
+import WavesurferPlayer from '@wavesurfer/react';
 
-const SpectrogramComponent = ({ audioRef }) => {
+const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const waveformRef = useRef(null);
   const canvasRef = useRef(null);
   const [wavesurferInstance, setWavesurferInstance] = useState(null);
@@ -15,8 +13,7 @@ const SpectrogramComponent = ({ audioRef }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [wavesurfer, setWavesurfer] = useState(null)
-
+  const [wavesurfer, setWavesurfer] = useState(null);
   const [duration, setDuration] = useState(0);
 
   const canvasWidth = 1600;
@@ -27,7 +24,7 @@ const SpectrogramComponent = ({ audioRef }) => {
   const threshold = 10; // Define an appropriate threshold
 
   useEffect(() => {
-    const { ws, wsRegions } = initializeWaveformWithRegions(audioRef.current.src, waveformRef.current, true);
+    const { ws, wsRegions } = initializeWaveformWithRegions(selectedAudio, waveformRef.current, true);
     setWavesurferInstance(ws);
     setWavesurferRegions(wsRegions);
 
@@ -40,6 +37,10 @@ const SpectrogramComponent = ({ audioRef }) => {
       setupAudioAnalysis();
     });
 
+    ws.on('seek', (newTime) => {
+      setCurrentTime(newTime * ws.getDuration());
+    });
+
     audioRef.current.onplay = () => ws.play();
     audioRef.current.onpause = () => ws.pause();
     audioRef.current.onseeked = () => ws.seekTo(audioRef.current.currentTime / audioRef.current.duration);
@@ -47,7 +48,7 @@ const SpectrogramComponent = ({ audioRef }) => {
     return () => {
       ws.destroy();
     };
-  }, [audioRef]);
+  }, [audioRef, selectedAudio]);
 
   const setupAudioAnalysis = () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -158,10 +159,9 @@ const SpectrogramComponent = ({ audioRef }) => {
   };
 
   const onReady = (ws) => {
-    setWavesurfer(ws)
-    setIsPlaying(false)
-  }
-
+    setWavesurfer(ws);
+    setIsPlaying(false);
+  };
 
   return (
     <div>
@@ -170,14 +170,20 @@ const SpectrogramComponent = ({ audioRef }) => {
         ref={canvasRef}
         height={100}
         waveColor="violet"
-        url={audioRef}
+        url={selectedAudio}
         onReady={onReady}
-        className='audio-analyzer'
+        className="audio-analyzer"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         style={{ marginTop: '25px', width: '96vw' }}
       />
-      <canvas className="canvas" ref={canvasRef} width={canvasWidth} height={canvasHeight}  style={{ marginTop: '25px', width: '90vw' }}></canvas>
+      <canvas
+        className="canvas"
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        style={{ marginTop: '25px', width: '90vw' }}
+      ></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       {wavesurferInstance && wavesurferRegions && (
