@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Waveform from './Waveform';
-import SpectrogramCanvas from './SpectrogramCanvas';
+import SpectrogramCanvas from './audioAnalysis';
 import AudioPlayer from '../AudioPlayer';
 import Controls from '../Controls';
 import RMenu from '../RMenu';

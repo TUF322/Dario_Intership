@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { initializeWaveformWithRegions } from './Regions';
+import WaveformSetup from './SpectrogramC/Waveform';
+import AudioAnalysis from './SpectrogramC/audioAnalysis';
 import Controls from './Controls';
 import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
-import WavesurferPlayer from '@wavesurfer/react';
 
 const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const waveformRef = useRef(null);
@@ -13,101 +13,19 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [wavesurfer, setWavesurfer] = useState(null);
   const [duration, setDuration] = useState(0);
 
-  const canvasWidth = 1600;
-  const canvasHeight = 200;
-  const backgroundColor = '#ddd';
-  const textColor = 'black';
-  const marginLeft = 60;
-  const threshold = 10; // Define an appropriate threshold
-
   useEffect(() => {
-    const { ws, wsRegions } = initializeWaveformWithRegions(selectedAudio, waveformRef.current, true);
-    setWavesurferInstance(ws);
-    setWavesurferRegions(wsRegions);
-
-    ws.on('audioprocess', () => {
-      setCurrentTime(ws.getCurrentTime());
-    });
-
-    ws.on('ready', () => {
-      setDuration(ws.getDuration());
-      setupAudioAnalysis();
-    });
-
-    ws.on('seek', (newTime) => {
-      setCurrentTime(newTime * ws.getDuration());
-    });
-
-    audioRef.current.onplay = () => ws.play();
-    audioRef.current.onpause = () => ws.pause();
-    audioRef.current.onseeked = () => ws.seekTo(audioRef.current.currentTime / audioRef.current.duration);
-
-    return () => {
-      ws.destroy();
-    };
-  }, [audioRef, selectedAudio]);
-
-  const setupAudioAnalysis = () => {
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    const analyser = audioContext.createAnalyser();
-    const source = audioContext.createMediaElementSource(audioRef.current);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    analyser.fftSize = 2048;
-
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
-    const canvas = canvasRef.current;
-    const canvasCtx = canvas.getContext('2d');
-
-    const drawSpectrogram = () => {
-      requestAnimationFrame(drawSpectrogram);
-      analyser.getByteFrequencyData(dataArray);
-
-      const maxChange = Math.max(...dataArray) - Math.min(...dataArray);
-      if (maxChange < threshold) {
-        return;
-      }
-
-      canvasCtx.fillStyle = backgroundColor;
-      canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width - marginLeft) / bufferLength;
-      let barHeight;
-      let x = marginLeft;
-
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
-        canvasCtx.fillStyle = `rgb(${barHeight + 100},0,255)`;
-        canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
-        x += barWidth + 1;
-      }
-
-      drawFrequencyScale(canvasCtx, canvas.height, bufferLength, audioContext.sampleRate);
-    };
-
-    drawSpectrogram();
-  };
-
-  const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
-    const nyquist = sampleRate / 2;
-    const stepFrequency = nyquist / bufferLength;
-
-    canvasCtx.fillStyle = textColor;
-    canvasCtx.font = '12px Arial';
-
-    for (let i = 0; i <= bufferLength; i++) {
-      const frequency = stepFrequency * i;
-      const frequencyInKHz = (frequency / 1000).toFixed(1);
-      if (frequency % 1000 === 0 && ![21.0, 18.0].includes(parseFloat(frequencyInKHz))) {
-        const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-        canvasCtx.fillText(`${frequencyInKHz} kHz`, 10, y);
-      }
+    if (waveformRef.current) {
+      const { ws, wsRegions } = WaveformSetup(selectedAudio, waveformRef.current, setWavesurferInstance, setWavesurferRegions, audioRef, setCurrentTime, setDuration);
+      
+      return () => {
+        if (ws) {
+          ws.destroy();
+        }
+      };
     }
-  };
+  }, [audioRef, selectedAudio]);
 
   const addRegion = (regionName) => {
     if (wavesurferRegions) {
@@ -158,30 +76,14 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
     }
   };
 
-  const onReady = (ws) => {
-    setWavesurfer(ws);
-    setIsPlaying(false);
-  };
-
   return (
     <div>
       <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>
-      <WavesurferPlayer
-        ref={canvasRef}
-        height={100}
-        waveColor="violet"
-        url={selectedAudio}
-        onReady={onReady}
-        className="audio-analyzer"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        style={{ marginTop: '25px', width: '96vw' }}
-      />
       <canvas
         className="canvas"
         ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
+        width={1600}
+        height={200}
         style={{ marginTop: '25px', width: '90vw' }}
       ></canvas>
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
@@ -197,6 +99,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
           setIsLooping={setIsLooping}
         />
       )}
+      <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} />
     </div>
   );
 };

@@ -1,40 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { initializeWaveformWithRegions } from '../Regions';
 
-const Waveform = ({ audioRef, selectedAudio, onReady, onCurrentTimeChange, onDurationChange, onRegionsChange }) => {
-  const waveformRef = useRef(null);
-  const [wavesurferInstance, setWavesurferInstance] = useState(null);
-  const [wavesurferRegions, setWavesurferRegions] = useState(null);
+const WaveformSetup = (selectedAudio, waveformContainer, setWavesurferInstance, setWavesurferRegions, audioRef, setCurrentTime, setDuration) => {
+  const { ws, wsRegions } = initializeWaveformWithRegions(selectedAudio, waveformContainer, true);
+  setWavesurferInstance(ws);
+  setWavesurferRegions(wsRegions);
 
-  useEffect(() => {
-    const { ws, wsRegions } = initializeWaveformWithRegions(selectedAudio, waveformRef.current, true);
-    setWavesurferInstance(ws);
-    setWavesurferRegions(wsRegions);
+  ws.on('audioprocess', () => {
+    setCurrentTime(ws.getCurrentTime());
+  });
 
-    ws.on('audioprocess', () => {
-      onCurrentTimeChange(ws.getCurrentTime());
-    });
+  ws.on('ready', () => {
+    setDuration(ws.getDuration());
+  });
 
-    ws.on('ready', () => {
-      onDurationChange(ws.getDuration());
-      onReady(ws);
-      onRegionsChange(wsRegions);
-    });
+  ws.on('seek', (newTime) => {
+    setCurrentTime(newTime * ws.getDuration());
+  });
 
-    ws.on('seek', (newTime) => {
-      onCurrentTimeChange(newTime * ws.getDuration());
-    });
+  audioRef.current.onplay = () => ws.play();
+  audioRef.current.onpause = () => ws.pause();
+  audioRef.current.onseeked = () => ws.seekTo(audioRef.current.currentTime / audioRef.current.duration);
 
-    audioRef.current.onplay = () => ws.play();
-    audioRef.current.onpause = () => ws.pause();
-    audioRef.current.onseeked = () => ws.seekTo(audioRef.current.currentTime / audioRef.current.duration);
-
-    return () => {
-      ws.destroy();
-    };
-  }, [audioRef, selectedAudio]);
-
-  return <div ref={waveformRef} style={{ width: '100%', height: '128px' }}></div>;
+  return { ws, wsRegions };
 };
 
-export default Waveform;
+export default WaveformSetup;

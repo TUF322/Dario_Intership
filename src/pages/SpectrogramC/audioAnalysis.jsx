@@ -1,13 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
-const SpectrogramCanvas = ({ audioRef }) => {
-  const canvasRef = useRef(null);
+const AudioAnalysis = ({ canvasRef, audioRef }) => {
   const canvasWidth = 1600;
   const canvasHeight = 200;
   const backgroundColor = '#ddd';
   const textColor = 'black';
   const marginLeft = 60;
-  const threshold = 10; // Define an appropriate threshold
+  const threshold = 10;
 
   useEffect(() => {
     const setupAudioAnalysis = () => {
@@ -52,35 +51,27 @@ const SpectrogramCanvas = ({ audioRef }) => {
       drawSpectrogram();
     };
 
-    const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
-      const nyquist = sampleRate / 2;
-      const stepFrequency = nyquist / bufferLength;
-
-      canvasCtx.fillStyle = textColor;
-      canvasCtx.font = '12px Arial';
-
-      for (let i = 0; i <= bufferLength; i++) {
-        const frequency = stepFrequency * i;
-        const frequencyInKHz = (frequency / 1000).toFixed(1);
-        if (frequency % 1000 === 0 && ![21.0, 18.0].includes(parseFloat(frequencyInKHz))) {
-          const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-          canvasCtx.fillText(`${frequencyInKHz} kHz`, 10, y);
-        }
-      }
-    };
-
     setupAudioAnalysis();
-  }, [audioRef]);
+  }, [audioRef, canvasRef]);
 
-  return (
-    <canvas
-      className="canvas"
-      ref={canvasRef}
-      width={canvasWidth}
-      height={canvasHeight}
-      style={{ marginTop: '25px', width: '90vw' }}
-    ></canvas>
-  );
+  const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
+    const nyquist = sampleRate / 2;
+    const stepFrequency = nyquist / bufferLength;
+
+    canvasCtx.fillStyle = textColor;
+    canvasCtx.font = '12px Arial';
+
+    for (let i = 0; i <= bufferLength; i++) {
+      const frequency = stepFrequency * i;
+      const frequencyInKHz = (frequency / 1000).toFixed(1);
+      if (frequency % 1000 === 0 && ![21.0, 18.0].includes(parseFloat(frequencyInKHz))) {
+        const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
+        canvasCtx.fillText(`${frequencyInKHz} kHz`, 10, y);
+      }
+    }
+  };
+
+  return null;
 };
 
-export default SpectrogramCanvas;
+export default AudioAnalysis;
