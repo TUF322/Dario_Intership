@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -16,6 +16,11 @@ const Bar = styled.div`
   position: relative;
 `;
 
+const Progress = styled.div`
+  height: 100%;
+  background-color: #a44612;
+`;
+
 const Time = styled.span`
   margin: 0 10px;
 `;
@@ -26,22 +31,28 @@ const formatTime = (time) => {
   return `${minutes}:${seconds}`;
 };
 
-const ProgressBar = ({ currentTime, duration, audioRef }) => {
-  const progressPercentage = (currentTime / duration) * 100;
+const ProgressBar = ({ currentTime, duration, audioRef, wavesurferInstance }) => {
+  const [progressPercentage, setProgressPercentage] = useState((currentTime / duration) * 100);
+
+  useEffect(() => {
+    setProgressPercentage((currentTime / duration) * 100);
+  }, [currentTime, duration]);
 
   const handleProgressClick = useCallback((e) => {
     const progress = e.currentTarget;
     const rect = progress.getBoundingClientRect();
     const offsetX = e.clientX - rect.left;
-    const newTime = (offsetX / rect.width) * duration;
+    const newPercentage = (offsetX / rect.width) * 100;
+    const newTime = (newPercentage / 100) * duration;
     audioRef.current.currentTime = newTime;
+    setProgressPercentage(newPercentage);
   }, [duration, audioRef]);
 
   return (
     <Container>
       <Time>{formatTime(currentTime)}</Time>
       <Bar onClick={handleProgressClick}>
-        <div style={{ width: `${progressPercentage}%`, height: '100%', backgroundColor: '#a44612' }}></div>
+        <Progress style={{ width: `${progressPercentage}%` }} />
       </Bar>
       <Time>{formatTime(duration)}</Time>
     </Container>

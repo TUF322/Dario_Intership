@@ -5,6 +5,12 @@ import AudioPlayer from '../AudioPlayer';
 import Controls from '../Controls';
 import RMenu from '../RMenu';
 import ProgressBar from '../ProgressBar';
+import styled from "styled-components";
+
+
+const Spe = styled.div`
+  margin-bottom: 1120px;
+`;
 
 const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const [wavesurferInstance, setWavesurferInstance] = useState(null);
@@ -82,6 +88,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
 
   return (
     <div>
+     
       <Waveform
         audioRef={audioRef}
         selectedAudio={selectedAudio}
@@ -89,14 +96,20 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
         onCurrentTimeChange={onCurrentTimeChange}
         onDurationChange={onDurationChange}
         onRegionsChange={onRegionsChange}
+        
       />
+     
+      
       <AudioPlayer
         selectedAudio={selectedAudio}
         onReady={onReady}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
+  
       <SpectrogramCanvas audioRef={audioRef} />
+     
+      
       <RMenu addRegion={addRegion} deleteRegion={deleteRegion} />
       <ProgressBar currentTime={currentTime} duration={duration} audioRef={audioRef} />
       {wavesurferInstance && wavesurferRegions && (
