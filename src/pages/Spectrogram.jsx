@@ -5,6 +5,9 @@ import Controls from './Controls';
 import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
 
+const random = (min, max) => Math.random() * (max - min) + min;
+const randomColor = () => `rgba(${random(1, 255)}, ${random(1, 255)}, ${random(1, 255)}, 0.5)`;
+
 const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const waveformRef = useRef(null);
   const canvasRef = useRef(null);
@@ -15,10 +18,20 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  const regionColors = useRef({});
+
   useEffect(() => {
     if (waveformRef.current) {
-      const { ws, wsRegions } = WaveformSetup(selectedAudio, waveformRef.current, setWavesurferInstance, setWavesurferRegions, audioRef, setCurrentTime, setDuration);
-      
+      const { ws, wsRegions } = WaveformSetup(
+        selectedAudio,
+        waveformRef.current,
+        setWavesurferInstance,
+        setWavesurferRegions,
+        audioRef,
+        setCurrentTime,
+        setDuration
+      );
+
       return () => {
         if (ws) {
           ws.destroy();
@@ -29,10 +42,13 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
 
   const addRegion = (regionName) => {
     if (wavesurferRegions) {
-      const existingRegion = wavesurferRegions.getRegions().find(region => region.data && region.data.content === regionName);
-      if (existingRegion) {
-        console.log(`Region with name "${regionName}" already exists.`);
-        return;
+      const regions = wavesurferRegions.getRegions();
+      const similarRegions = Object.values(regions).filter(region => region.data && region.data.content.startsWith(regionName));
+      const newRegionName = `${regionName} ${similarRegions.length + 1}`;
+      const color = regionColors.current[regionName] || randomColor();
+
+      if (!regionColors.current[regionName]) {
+        regionColors.current[regionName] = color;
       }
 
       const start = wavesurferInstance.getCurrentTime();
@@ -41,11 +57,11 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
         start,
         end,
         data: {},
-        color: 'rgba(0, 255, 0, 0.3)',
-        content: regionName
+        color: color,
+        content: newRegionName
       });
 
-      region.data = { ...region.data, content: regionName };
+      region.data = { ...region.data, content: newRegionName };
 
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
@@ -55,23 +71,21 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const deleteRegion = (regionName) => {
     if (wavesurferRegions) {
       const regions = wavesurferRegions.getRegions();
-      console.log('Current regions:', regions);
       let regionFound = false;
+
       for (const regionId in regions) {
         const region = regions[regionId];
-        console.log('Checking region:', region);
-        console.log('Region data:', region.data);
-
         if (region.data && region.data.content === regionName) {
-          console.log('Deleting region:', region);
           region.remove();
           regionFound = true;
           break;
         }
       }
+
       if (!regionFound) {
         console.log(`Region with name "${regionName}" not found.`);
       }
+
       console.log('Regions after deletion attempt:', wavesurferRegions.getRegions());
     }
   };

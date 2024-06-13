@@ -14,7 +14,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
     progressColor: '#0000fe',
     url: audioUrl,
     normalize: true,
-    height: 120,
+    height: 128,
     plugins: [TimelinePlugin.create()],
     
   });

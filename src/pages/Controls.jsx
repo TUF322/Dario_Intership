@@ -8,6 +8,7 @@ import {
   IoPauseSharp,
   IoRepeat,
   IoResize,
+  IoSaveSharp
 } from 'react-icons/io5';
 import PropTypes from 'prop-types';
 import styled from "styled-components";
@@ -25,7 +26,20 @@ const Container = styled.section`
     padding: 10px;
     font-size: 24px;
   }
+
+  ico {
+    background: none;
+      border: none;
+      
+      padding: 10px;
+      font-size: 24px;
+    }
+    
+  
+
 `;
+
+
 
 const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -122,6 +136,8 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
+        <ico><IoResize/></ico>
+        
         <input
           type="range"
           min="0"
@@ -129,6 +145,8 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
           value={zoomLevel}
           onChange={(e) => handleZoom(e.target.valueAsNumber)}
         />
+        <button><IoSaveSharp/></button>
+        
 
     </Container>
   );
