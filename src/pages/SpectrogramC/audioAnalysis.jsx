@@ -38,10 +38,23 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
         let barHeight;
         let x = marginLeft;
 
+        // Get current time of the audio element
+        const currentTime = audioRef.current.currentTime;
+
         for (let i = 0; i < bufferLength; i++) {
           barHeight = dataArray[i];
           canvasCtx.fillStyle = `rgb(${barHeight + 100},0,255)`;
           canvasCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight / 2);
+
+          // Calculate frequency in kHz
+          const frequency = i * (audioContext.sampleRate / 2) / bufferLength / 1000;
+          const frequencyTimeLog = {
+            time: currentTime,
+            frequency: frequency.toFixed(1)
+          };
+
+          console.log(frequencyTimeLog);
+
           x += barWidth + 1;
         }
 
