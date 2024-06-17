@@ -1,3 +1,4 @@
+// Waveform.jsx
 import { initializeWaveformWithRegions } from '../Regions';
 
 const WaveformSetup = (selectedAudio, waveformContainer, setWavesurferInstance, setWavesurferRegions, audioRef, setCurrentTime, setDuration) => {
@@ -11,6 +12,9 @@ const WaveformSetup = (selectedAudio, waveformContainer, setWavesurferInstance, 
 
   ws.on('ready', () => {
     setDuration(ws.getDuration());
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
   });
 
   ws.on('seek', (newTime) => {
