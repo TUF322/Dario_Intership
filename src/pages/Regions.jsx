@@ -2,12 +2,11 @@ import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
-
 // Utility functions
 const random = (min, max) => Math.random() * (min - max) + min;
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
-const initializeWaveformWithRegions = (audioUrl, container, loop) => {
+const initializeWaveformWithRegions = (audioUrl, container, loop, audioRate = 1) => {
   const ws = WaveSurfer.create({
     container,
     waveColor: 'rgb(75, 75, 200)',
@@ -15,13 +14,11 @@ const initializeWaveformWithRegions = (audioUrl, container, loop) => {
     url: audioUrl,
     normalize: true,
     height: 128,
+    audioRate: audioRate,
     plugins: [TimelinePlugin.create()],
-    
   });
 
   const wsRegions = ws.registerPlugin(RegionsPlugin.create());
-
-
 
   let activeRegion = null;
 

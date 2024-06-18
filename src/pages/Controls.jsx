@@ -8,7 +8,8 @@ import {
   IoPauseSharp,
   IoRepeat,
   IoResize,
-  IoSaveSharp
+  IoSaveSharp,
+  IoSpeedometerOutline // Icon for speed control
 } from 'react-icons/io5';
 import PropTypes from 'prop-types';
 import styled from "styled-components";
@@ -33,11 +34,22 @@ const Container = styled.section`
     padding: 10px;
     font-size: 24px;
   }
+
+  .speed-control {
+    display: flex;
+    align-items: center;
+  }
+
+  .speed-display {
+    margin-left: 8px;
+    font-size: 18px;
+  }
 `;
 
 const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
   useEffect(() => {
     if (isPlaying) {
@@ -46,6 +58,13 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
       audioRef.current.pause();
     }
   }, [isPlaying, audioRef]);
+
+  useEffect(() => {
+    audioRef.current.playbackRate = playbackSpeed;
+    if (wavesurferInstance) {
+      wavesurferInstance.setPlaybackRate(playbackSpeed);
+    }
+  }, [playbackSpeed, audioRef, wavesurferInstance]);
 
   const handleTimeUpdate = useCallback(() => {
     if (wavesurferRegions && isLooping) {
@@ -222,6 +241,19 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   };
 
+  const handleSpeedToggle = () => {
+    setPlaybackSpeed((prevSpeed) => {
+      if (prevSpeed === 1) return 1.5;
+      if (prevSpeed === 1.5) return 2;
+      if (prevSpeed === 2) return 3;
+      if (prevSpeed === 3) return 4;
+      if (prevSpeed === 4) return 0.75;
+      if (prevSpeed === 0.75) return 0.5;
+      if (prevSpeed === 0.5) return 0.25;
+      return 1;
+    });
+  };
+
   return (
     <Container>
         <button onClick={() => handleControlClick(30)}>
@@ -242,6 +274,12 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <button onClick={handleLoopToggle}>
           <IoRepeat color={isLooping ? 'green' : 'black'} />
         </button>
+        <div className="speed-control">
+          <button onClick={handleSpeedToggle}>
+            <IoSpeedometerOutline />
+          </button>
+          <span className="speed-display">{playbackSpeed}x</span>
+        </div>
         <ico><IoResize/></ico>
         
         <input
@@ -268,5 +306,3 @@ Controls.propTypes = {
 };
 
 export default Controls;
-
-   
