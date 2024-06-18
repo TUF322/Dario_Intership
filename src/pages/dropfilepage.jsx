@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 
 const DropFileArea = styled.div`
@@ -26,6 +26,7 @@ const DropFileArea = styled.div`
 
 const DropFile = ({ onFileUpload }) => {
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -58,11 +59,12 @@ const DropFile = ({ onFileUpload }) => {
       onDragOver={handleDrag}
       onDragLeave={handleDrag}
       onDrop={handleDrop}
+      onClick={() => fileInputRef.current.click()}
     >
       <p>Drag & Drop your MP3 file here, or click to select a file</p>
       <input
         type="file"
-        id="fileElem"
+        ref={fileInputRef}
         accept="audio/mpeg"
         onChange={(e) => {
           const file = e.target.files[0];

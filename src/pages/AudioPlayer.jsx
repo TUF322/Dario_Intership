@@ -1,28 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
-import SpectrogramComponent from './Spectrogram';
+import React, { useState, useRef } from 'react';
+import DropFile from './dropfilepage'; // Adjust the import path as necessary
+import SpectrogramComponent from './Spectrogram'; // Adjust the import path as necessary
+import styled from 'styled-components';
+
+const SpecCard = styled.div`
+  // Your styles here, if any
+`;
 
 const App = () => {
   const audioRef = useRef(null);
   const [selectedAudio, setSelectedAudio] = useState(null);
   const [uploadedAudio, setUploadedAudio] = useState(null);
 
-  const handleFileDrop = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      setSelectedAudio(fileUrl);
-      audioRef.current.src = fileUrl;
-    }
+  const handleFileUpload = (file) => {
+    const fileUrl = URL.createObjectURL(file);
+    setSelectedAudio(fileUrl);
+    audioRef.current.src = fileUrl;
   };
 
   return (
     <div>
-      <input type="file" accept="audio/*" onChange={handleFileDrop} />
-      <div className='spectrogram-card'>
-      <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
-      </div>
-      
-      <audio ref={audioRef} src={uploadedAudio || selectedAudio} controls style={{opacity:'0'}}></audio>
+      <DropFile onFileUpload={handleFileUpload} />
+      <SpecCard className='spectrogram-card'>
+        <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
+      </SpecCard>
+      <audio ref={audioRef} src={uploadedAudio || selectedAudio} controls style={{ opacity: '0' }}></audio>
     </div>
   );
 };
