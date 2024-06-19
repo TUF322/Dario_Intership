@@ -24,7 +24,7 @@ const App = () => {
       <SpecCard className='spectrogram-card'>
         <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
       </SpecCard>
-      <audio ref={audioRef} src={uploadedAudio || selectedAudio} muted="true" controls style={{ opacity: '0' }}></audio>
+      <audio ref={audioRef} src={uploadedAudio || selectedAudio}  controls style={{ opacity: '0' }}></audio>
     </div>
   );
 };
