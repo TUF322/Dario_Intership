@@ -68,10 +68,10 @@ const DropFile = ({ onFileUpload }) => {
         accept="audio/mpeg"
         onChange={(e) => {
           const file = e.target.files[0];
-          if (file && file.type === 'audio/mpeg' && file.size <= 200 * 1024 * 1024) {
+          if (file && file.type === 'audio/mpeg' && file.size <= 250 * 1024 * 1024) {
             onFileUpload(file);
           } else {
-            alert('Please upload an MP3 file under 200 MB.');
+            alert('Please upload an MP3 file under 250 MB.');
           }
         }}
       />

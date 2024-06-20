@@ -10,12 +10,13 @@ const SpecCard = styled.div`
 const App = () => {
   const audioRef = useRef(null);
   const [selectedAudio, setSelectedAudio] = useState(null);
-  const [uploadedAudio, setUploadedAudio] = useState(null);
 
   const handleFileUpload = (file) => {
     const fileUrl = URL.createObjectURL(file);
     setSelectedAudio(fileUrl);
-    audioRef.current.src = fileUrl;
+    if (audioRef.current) {
+      audioRef.current.src = fileUrl;
+    }
   };
 
   return (
@@ -24,7 +25,7 @@ const App = () => {
       <SpecCard className='spectrogram-card'>
         <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
       </SpecCard>
-      <audio ref={audioRef} src={uploadedAudio || selectedAudio}  controls style={{ opacity: '0' }}></audio>
+      <audio ref={audioRef} controls style={{ display: 'none' }} />
     </div>
   );
 };

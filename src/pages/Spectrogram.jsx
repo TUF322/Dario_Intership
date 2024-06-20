@@ -21,7 +21,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const regionColors = useRef({});
 
   useEffect(() => {
-    if (waveformRef.current) {
+    if (waveformRef.current && selectedAudio) {
       const { ws, wsRegions } = WaveformSetup(
         selectedAudio,
         waveformRef.current,
