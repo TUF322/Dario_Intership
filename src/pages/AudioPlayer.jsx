@@ -8,7 +8,7 @@ const SpecCard = styled.div`
 `;
 
 const App = () => {
-  const audioRef = useRef(null);
+  const audioRef = useRef(new Audio()); // Create an audio object
   const [selectedAudio, setSelectedAudio] = useState(null);
 
   const handleFileUpload = (file) => {
@@ -16,6 +16,7 @@ const App = () => {
     setSelectedAudio(fileUrl);
     if (audioRef.current) {
       audioRef.current.src = fileUrl;
+      audioRef.current.load(); // Ensure the audio object reloads the new source
     }
   };
 
@@ -25,7 +26,6 @@ const App = () => {
       <SpecCard className='spectrogram-card'>
         <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
       </SpecCard>
-      <audio ref={audioRef} controls style={{ display: 'none' }} />
     </div>
   );
 };

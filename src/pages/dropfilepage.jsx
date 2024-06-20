@@ -44,10 +44,10 @@ const DropFile = ({ onFileUpload }) => {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      if (file.type === 'audio/mpeg' && file.size <= 200 * 1024 * 1024) {
+      if (file.type === 'audio/mpeg' && file.size <= 250 * 1024 * 1024) {
         onFileUpload(file);
       } else {
-        alert('Please upload an MP3 file under 200 MB.');
+        alert('Please upload an MP3 file under 250 MB.');
       }
     }
   };
