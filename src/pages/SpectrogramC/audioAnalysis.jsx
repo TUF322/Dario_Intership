@@ -64,13 +64,14 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
 
       drawFrequencyScale(canvasCtx, canvas.width, audioContext.sampleRate);
 
-      // Calculate and log peak frequency and current time
+      // Display the current frequency on the top left of the canvas
       const nyquist = audioContext.sampleRate / 2;
       const binWidth = nyquist / bufferLength;
-      const peakIndex = dataArray.indexOf(Math.max(...dataArray));
-      const peakFrequency = (peakIndex * binWidth) / 1000;
-      const currentTime = audioRef.current.currentTime.toFixed(2);
-      console.log(`Current Time: ${currentTime} s, Peak Frequency: ${peakFrequency.toFixed(1)} kHz`);
+      const currentIndex = dataArray.indexOf(Math.max(...dataArray));
+      const currentFrequency = (currentIndex * binWidth) / 1000;
+      canvasCtx.fillStyle = textColor;
+      canvasCtx.font = '16px Arial';
+      canvasCtx.fillText(`Current Frequency: ${currentFrequency.toFixed(1)} kHz`, 10, 20);
     };
 
     drawSpectrogram();
