@@ -21,20 +21,16 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
     const canvas = canvasRef.current;
     const canvasCtx = canvas.getContext('2d');
 
-    const drawFrequencyScale = (canvasCtx, canvasHeight, bufferLength, sampleRate) => {
+    const drawFrequencyScale = (canvasCtx, canvasWidth, sampleRate) => {
       const nyquist = sampleRate / 2;
-      const stepFrequency = nyquist / bufferLength;
+      const binWidth = nyquist / bufferLength;
 
       canvasCtx.fillStyle = textColor;
       canvasCtx.font = '12px Arial';
 
-      for (let i = 0; i <= bufferLength; i += 32) { // Adjusted step for readability
-        const frequency = stepFrequency * i;
-        const frequencyInKHz = (frequency / 1000).toFixed(1);
-        if (frequency % 1000 === 0) {
-          const y = canvasHeight - ((frequency / nyquist) * canvasHeight);
-          canvasCtx.fillText(`${frequencyInKHz} kHz`, 10, y);
-        }
+      for (let i = 0; i <= nyquist; i += 5000) {
+        const x = marginLeft + (i / nyquist) * (canvasWidth - marginLeft);
+        canvasCtx.fillText(`${(i / 1000).toFixed(0)} kHz`, x, canvasHeight - 10);
       }
     };
 
@@ -42,8 +38,11 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
       requestAnimationFrame(drawSpectrogram);
       analyser.getByteFrequencyData(dataArray);
 
-      const maxChange = Math.max(...dataArray) - Math.min(...dataArray);
-      if (maxChange < threshold) {
+      const maxIntensity = Math.max(...dataArray);
+      const minIntensity = Math.min(...dataArray);
+      const intensityRange = maxIntensity - minIntensity;
+
+      if (intensityRange < threshold) {
         return;
       }
 
@@ -54,28 +53,29 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
       let x = marginLeft;
 
       for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height;
-        canvasCtx.fillStyle = `rgb(${barHeight + 100}, 0, 255)`;
+        const normalizedValue = (dataArray[i] - minIntensity) / intensityRange;
+        const barHeight = normalizedValue * canvasHeight;
+
+        canvasCtx.fillStyle = `rgb(${Math.floor((dataArray[i] / 255) * 255)}, 0, 255)`;
         canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        x += barWidth + 1;
+
+        x += barWidth;
       }
 
-      drawFrequencyScale(canvasCtx, canvas.height, bufferLength, audioContext.sampleRate);
+      drawFrequencyScale(canvasCtx, canvas.width, audioContext.sampleRate);
+
+      // Calculate and log peak frequency and current time
+      const nyquist = audioContext.sampleRate / 2;
+      const binWidth = nyquist / bufferLength;
+      const peakIndex = dataArray.indexOf(Math.max(...dataArray));
+      const peakFrequency = (peakIndex * binWidth) / 1000;
+      const currentTime = audioRef.current.currentTime.toFixed(2);
+      console.log(`Current Time: ${currentTime} s, Peak Frequency: ${peakFrequency.toFixed(1)} kHz`);
     };
 
     drawSpectrogram();
 
-    const interval = setInterval(() => {
-      analyser.getByteFrequencyData(dataArray);
-      const nyquist = audioContext.sampleRate / 2;
-      const binWidth = nyquist / bufferLength;
-      const peakIndex = dataArray.indexOf(Math.max(...dataArray));
-      const peakFrequency = peakIndex * binWidth / 1000;
-      console.log(`Peak frequency: ${peakFrequency.toFixed(1)} kHz`);
-    }, 1000);
-
     return () => {
-      clearInterval(interval);
       source.disconnect();
       audioContext.close();
     };
