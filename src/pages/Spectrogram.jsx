@@ -40,33 +40,36 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
     }
   }, [audioRef, selectedAudio]);
 
-  const addRegion = (regionName) => {
+  const addRegion = (regionName, url) => {
     if (wavesurferRegions) {
       const regions = wavesurferRegions.getRegions();
       const similarRegions = Object.values(regions).filter(region => region.data && region.data.content.startsWith(regionName));
       const newRegionName = `${regionName} ${similarRegions.length + 1}`;
       const color = regionColors.current[regionName] || randomColor();
-
+  
       if (!regionColors.current[regionName]) {
         regionColors.current[regionName] = color;
       }
-
+  
       const start = wavesurferInstance.getCurrentTime();
       const end = start + 10;
       const region = wavesurferRegions.addRegion({
         start,
         end,
-        data: {},
+        data: {
+          url: url // Assign the URL to the region data
+        },
         color: color,
         content: newRegionName
       });
-
+  
       region.data = { ...region.data, content: newRegionName };
-
+  
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
     }
   };
+  
 
   const deleteRegion = (regionName) => {
     if (wavesurferRegions) {

@@ -13,6 +13,7 @@ import {
 } from 'react-icons/io5';
 import PropTypes from 'prop-types';
 import styled from "styled-components";
+import lamejs from 'lamejs';
 
 const Container = styled.section`
   display: flex;
@@ -109,7 +110,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   }, [audioRef, handleTimeUpdate]);
 
-  const handleControlClick = (val, forward= false) => {
+  const handleControlClick = (val, forward = false) => {
     if (forward) {
       audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + val);
     } else {
@@ -133,113 +134,101 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
   
     const regions = Object.values(wavesurferRegions.getRegions());
     if (regions.length === 0) return;
-
+  
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const audioBuffers = [];
   
       const fetchRegionAudio = async (region) => {
+        if (!region.data || !region.data.url) {
+          console.warn(`Region ${region.id} does not have a valid URL`);
+          return null; // Handle the absence of URL as needed
+        }
+      
         try {
-          const response = await fetch(region.url);
+          console.log(`Fetching audio for region ${region.id} from ${region.data.url}`);
+          const response = await fetch(region.data.url);
           if (!response.ok) {
             throw new Error(`Network response was not ok for region ${region.id}: ${response.status}`);
           }
+      
           const arrayBuffer = await response.arrayBuffer();
           console.log(`Fetched audio for region ${region.id}: ${arrayBuffer.byteLength} bytes`);
+      
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          console.log(`Decoded audio for region ${region.id}`);
+      
           const start = Math.floor(region.start * audioBuffer.sampleRate);
-          const end = Math.floor(region.end * audioBuffer.sampleRate);
-          const slicedBuffer = audioBuffer.slice(start, end);
-          audioBuffers.push(slicedBuffer);
+          const end = Math.min(Math.floor(region.end * audioBuffer.sampleRate), audioBuffer.length);
+      
+          if (start >= end || end > audioBuffer.length) {
+            throw new Error(`Invalid start or end time for region ${region.id}`);
+          }
+      
+          const slicedBuffer = audioBuffer.getChannelData(0).slice(start, end);
+          return slicedBuffer;
         } catch (error) {
           console.error(`Error fetching or decoding audio for region ${region.id}:`, error);
-          throw error; // Rethrow the error to be caught by Promise.all
+          throw error;
         }
       };
+      
+      
   
-      await Promise.all(regions.map(fetchRegionAudio));
+      // Fetch and combine audio for all regions
+      for (const region of regions) {
+        const regionBuffer = await fetchRegionAudio(region);
+        if (regionBuffer) {
+          audioBuffers.push(regionBuffer);
+        }
+      }
   
-      const totalLength = audioBuffers.reduce((sum, buffer) => sum + buffer.length, 0);
-      const concatenatedBuffer = audioContext.createBuffer(1, totalLength, audioContext.sampleRate);
-      let offset = 0;
+      if (audioBuffers.length === 0) {
+        console.error('No valid audio buffers were fetched');
+        return;
+      }
   
-      audioBuffers.forEach(buffer => {
-        concatenatedBuffer.copyToChannel(buffer.getChannelData(0), 0, offset);
-        offset += buffer.length;
-      });
+      // Combine all sliced audio buffers into one
+      const combinedBuffer = Float32Array.from(audioBuffers.flat());
   
-      const wavData = audioBufferToWav(concatenatedBuffer);
-      const blob = new Blob([new DataView(wavData)], { type: 'audio/wav' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = 'exported_audio.wav';
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
+      // Convert combined buffer to MP3
+      const mp3Blob = encodeWAVToMP3(combinedBuffer, audioContext.sampleRate);
+  
+      // Create a download link and click it
+      const url = URL.createObjectURL(mp3Blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'regions_audio.mp3';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error fetching region audio:', error);
     }
   };
   
-  // Utility function to convert AudioBuffer to WAV
-  const audioBufferToWav = (buffer) => {
-    const numOfChannels = buffer.numberOfChannels;
-    const length = buffer.length * numOfChannels * 2 + 44;
-    const bufferArray = new ArrayBuffer(length);
-    const view = new DataView(bufferArray);
-    const channels = [];
-    let index = 0;
-    let sample;
-    let offset = 0;
+  const encodeWAVToMP3 = (samples, sampleRate) => {
+    const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // Mono, sample rate, and bit rate
+    const maxSamples = 1152;
+    const mp3Data = [];
   
-    // Write WAV header
-    setUint32(0x46464952); // "RIFF"
-    setUint32(length - 8); // file length - 8
-    setUint32(0x45564157); // "WAVE"
-  
-    setUint32(0x20746d66); // "fmt " chunk
-    setUint32(16); // length = 16
-    setUint16(1); // PCM (uncompressed)
-    setUint16(numOfChannels);
-    setUint32(buffer.sampleRate);
-    setUint32(buffer.sampleRate * 2 * numOfChannels); // avg. bytes/sec
-    setUint16(numOfChannels * 2); // block-align
-    setUint16(16); // 16-bit (hardcoded in this demo)
-  
-    setUint32(0x61746164); // "data" - chunk
-    setUint32(length - offset - 4); // chunk length
-  
-    // Write interleaved data
-    for (let i = 0; i < buffer.numberOfChannels; i++) {
-      channels.push(buffer.getChannelData(i));
-    }
-  
-    while (index < buffer.length) {
-      for (let i = 0; i < numOfChannels; i++) {
-        sample = Math.max(-1, Math.min(1, channels[i][index]));
-        sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
-        view.setInt16(offset, sample, true);
-        offset += 2;
+    for (let i = 0; i < samples.length; i += maxSamples) {
+      const sampleChunk = samples.subarray(i, i + maxSamples);
+      const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
+      if (mp3buf.length > 0) {
+        mp3Data.push(new Int8Array(mp3buf));
       }
-      index++;
     }
   
-    console.log('WAV buffer created:', bufferArray.byteLength, 'bytes');
-  
-    return bufferArray;
-  
-    function setUint16(data) {
-      view.setUint16(offset, data, true);
-      offset += 2;
+    const end = mp3Encoder.flush();
+    if (end.length > 0) {
+      mp3Data.push(new Int8Array(end));
     }
   
-    function setUint32(data) {
-      view.setUint32(offset, data, true);
-      offset += 4;
-    }
+    return new Blob(mp3Data, { type: 'audio/mp3' });
   };
+  
+  
 
   const handleSpeedToggle = () => {
     setPlaybackSpeed((prevSpeed) => {
@@ -256,41 +245,40 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
 
   return (
     <Container>
-        <button onClick={() => handleControlClick(30)}>
-          <IoPlaySkipBackSharp />
+      <button onClick={() => handleControlClick(30)}>
+        <IoPlaySkipBackSharp />
+      </button>
+      <button onClick={() => handleControlClick(10)}>
+        <IoPlayBackSharp />
+      </button>
+      <button onClick={() => setIsPlaying(!isPlaying)}>
+        {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
+      </button>
+      <button onClick={() => handleControlClick(10, true)}>
+        <IoPlayForwardSharp />
+      </button>
+      <button onClick={() => handleControlClick(30, true)}>
+        <IoPlaySkipForwardSharp />
+      </button>
+      <button onClick={handleLoopToggle}>
+        <IoRepeat color={isLooping ? 'green' : 'black'} />
+      </button>
+      <div className="speed-control">
+        <button onClick={handleSpeedToggle}>
+          <IoSpeedometerOutline />
         </button>
-        <button onClick={() => handleControlClick(10)}>
-          <IoPlayBackSharp />
-        </button>
-        <button onClick={() => setIsPlaying(!isPlaying)}>
-          {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
-        </button>
-        <button onClick={() => handleControlClick(10, true)}>
-          <IoPlayForwardSharp />
-        </button>
-        <button onClick={() => handleControlClick(30, true)}>
-          <IoPlaySkipForwardSharp />
-        </button>
-        <button onClick={handleLoopToggle}>
-          <IoRepeat color={isLooping ? 'green' : 'black'} />
-        </button>
-        <div className="speed-control">
-          <button onClick={handleSpeedToggle}>
-            <IoSpeedometerOutline />
-          </button>
-          <span className="speed-display">{playbackSpeed}x</span>
-        </div>
-        <ico><IoResize/></ico>
-        
-        <input
-          type="range"
-          min="0"
-          max="1200"
-          value={zoomLevel}
-          onChange={(e) => handleZoom(e.target.valueAsNumber)}
-        />
-        <button onClick={handleSaveClick}><IoSaveSharp/></button>    
-        
+        <span className="speed-display">{playbackSpeed}x</span>
+      </div>
+      <ico><IoResize /></ico>
+
+      <input
+        type="range"
+        min="0"
+        max="1200"
+        value={zoomLevel}
+        onChange={(e) => handleZoom(e.target.valueAsNumber)}
+      />
+      <button onClick={handleSaveClick}><IoSaveSharp /></button>
     </Container>
   );
 });
