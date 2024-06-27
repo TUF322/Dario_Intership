@@ -114,6 +114,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
           wavesurferRegions={wavesurferRegions}
           isLooping={isLooping}
           setIsLooping={setIsLooping}
+          selectedAudio={selectedAudio}
         />
       )}
       <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} />
