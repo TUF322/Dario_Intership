@@ -1,18 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import {
-  IoPlayBackSharp,
-  IoPlayForwardSharp,
-  IoPlaySkipBackSharp,
-  IoPlaySkipForwardSharp,
-  IoPlaySharp,
-  IoPauseSharp,
-  IoRepeat,
-  IoSpeedometerOutline, // Icon for speed control
-  IoSearchSharp, // Icon for zoom control
-  IoSaveSharp
-} from 'react-icons/io5';
+import React, { useState, useEffect, useCallback } from 'react';
+import styled from 'styled-components';
+import { IoPlayBackSharp, IoPlayForwardSharp, IoPlaySkipBackSharp, IoPlaySkipForwardSharp, IoPlaySharp, IoPauseSharp, IoRepeat, IoSpeedometerOutline, IoSearchSharp, IoSaveSharp } from 'react-icons/io5';
 import PropTypes from 'prop-types';
-import styled from "styled-components";
+import Wavesurfer from 'wavesurfer.js';
+import decodeAudio from 'audio-decode';
 import lamejs from 'lamejs';
 
 const Container = styled.section`
@@ -58,11 +49,14 @@ const Container = styled.section`
   }
 `;
 
-const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping, selectedAudio }) => {
+const Controls = ({
+  isPlaying, setIsPlaying, audioRef, wavesurferInstance, wavesurferRegions, isLooping, setIsLooping, selectedAudio
+}) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
+  // Handle playback state changes
   useEffect(() => {
     if (isPlaying) {
       audioRef.current.play();
@@ -71,6 +65,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   }, [isPlaying, audioRef]);
 
+  // Set playback speed
   useEffect(() => {
     audioRef.current.playbackRate = playbackSpeed;
     if (wavesurferInstance) {
@@ -78,6 +73,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   }, [playbackSpeed, audioRef, wavesurferInstance]);
 
+  // Handle time updates and looping
   const handleTimeUpdate = useCallback(() => {
     if (wavesurferRegions && isLooping) {
       const currentTime = audioRef.current.currentTime;
@@ -111,16 +107,15 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
 
+  // Add time update listener
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-
-      return () => {
-        audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-      };
+      return () => audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
     }
   }, [audioRef, handleTimeUpdate]);
 
+  // Handle playback control clicks
   const handleControlClick = (val, forward = false) => {
     if (forward) {
       audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + val);
@@ -129,10 +124,12 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   };
 
+  // Toggle looping
   const handleLoopToggle = useCallback(() => {
-    setIsLooping((prevLoop) => !prevLoop);
+    setIsLooping(prevLoop => !prevLoop);
   }, [setIsLooping]);
 
+  // Handle zoom level change
   const handleZoom = (zoomValue) => {
     setZoomLevel(zoomValue);
     if (wavesurferInstance) {
@@ -140,29 +137,24 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
     }
   };
 
+  // Save selected region as MP3
   const handleSaveClick = async () => {
     if (!wavesurferRegions) return;
-  
+
     const regions = Object.values(wavesurferRegions.getRegions());
     if (regions.length === 0) return;
-  
+
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const audioBuffer = await fetchAndCombineAudio(selectedAudio, regions, audioContext);
-  
-      if (!audioBuffer) {
-        console.error('No valid audio buffer fetched');
-        return;
-      }
-  
-      // Convert combined buffer to MP3
-      const mp3Blob = encodeWAVToMP3(audioBuffer, audioContext.sampleRate);
-  
-      // Create a download link and click it
+      const audioBuffer = await fetchAudioBuffer(selectedAudio);
+
+      const region = lastRegionPlayed || regions[0]; // Use last played region or first region as default
+
+      const mp3Blob = await encodeBufferToMP3(audioBuffer, region.start, region.end);
+
       const url = URL.createObjectURL(mp3Blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'regions_audio.mp3';
+      link.download = 'cut_region_audio.mp3';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -170,59 +162,64 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
       console.error('Error fetching or encoding audio:', error);
     }
   };
-  
-  const fetchAndCombineAudio = async (audioFile, regions, audioContext) => {
+
+  // Fetch audio buffer from selected audio file
+  const fetchAudioBuffer = async (audioFile) => {
     try {
       const response = await fetch(audioFile);
       const arrayBuffer = await response.arrayBuffer();
-      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-  
-      const audioData = [];
-      regions.forEach(region => {
-        const start = Math.floor(region.start * audioBuffer.sampleRate);
-        const end = Math.min(Math.floor(region.end * audioBuffer.sampleRate), audioBuffer.length);
-  
-        if (start >= end || end > audioBuffer.length) {
-          throw new Error(`Invalid start or end time for region ${region.id}`);
-        }
-  
-        const slicedBuffer = audioBuffer.getChannelData(0).slice(start, end);
-        audioData.push(slicedBuffer);
-      });
-  
-      // Combine all sliced audio buffers into one
-      const combinedBuffer = Float32Array.from(audioData.flat());
-      return combinedBuffer;
+      const audioBuffer = await decodeAudio(arrayBuffer);
+      return audioBuffer;
     } catch (error) {
-      console.error('Error fetching or combining audio:', error);
-      return null;
+      console.error('Error decoding audio data:', error);
+      throw error;
     }
   };
+
+  // Encode audio buffer to MP3
+  const encodeBufferToMP3 = async (audioBuffer, startSeconds, endSeconds) => {
+    const mp3Encoder = new lamejs.Mp3Encoder(audioBuffer.numberOfChannels, audioBuffer.sampleRate, 128);
+    const sampleRate = audioBuffer.sampleRate;
+    const channels = audioBuffer.numberOfChannels;
   
-  const encodeWAVToMP3 = (samples, sampleRate) => {
-    const mp3Encoder = new lamejs.Mp3Encoder(1, sampleRate, 128); // Mono, sample rate, and bit rate
-    const maxSamples = 1152;
+    const startSample = Math.floor(startSeconds * sampleRate);
+    const endSample = Math.floor(endSeconds * sampleRate);
+  
+    const maxSamples = 1152; // This is a good default chunk size for lamejs
+  
     const mp3Data = [];
   
-    for (let i = 0; i < samples.length; i += maxSamples) {
-      const sampleChunk = samples.subarray(i, i + maxSamples);
-      const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
-      if (mp3buf.length > 0) {
-        mp3Data.push(new Int8Array(mp3buf));
+    for (let channel = 0; channel < channels; channel++) {
+      const channelData = audioBuffer.getChannelData(channel);
+      const slicedData = channelData.slice(startSample, endSample);
+  
+      const samples = new Int16Array(slicedData.length);
+      for (let i = 0; i < slicedData.length; i++) {
+        samples[i] = Math.max(-1, Math.min(1, slicedData[i])) * 32767;
+      }
+  
+      for (let i = 0; i < samples.length; i += maxSamples) {
+        const sampleChunk = samples.subarray(i, i + maxSamples);
+        const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
+        if (mp3buf.length > 0) {
+          mp3Data.push(new Int8Array(mp3buf));
+        }
       }
     }
   
-    const end = mp3Encoder.flush();
-    if (end.length > 0) {
-      mp3Data.push(new Int8Array(end));
+    // Flush remaining data
+    const mp3buf = mp3Encoder.flush();
+    if (mp3buf.length > 0) {
+      mp3Data.push(new Int8Array(mp3buf));
     }
   
+    // Create a Blob from the MP3 data
     return new Blob(mp3Data, { type: 'audio/mp3' });
   };
-  
-  
+
+  // Toggle playback speed
   const handleSpeedToggle = () => {
-    setPlaybackSpeed((prevSpeed) => {
+    setPlaybackSpeed(prevSpeed => {
       if (prevSpeed === 1) return 1.5;
       if (prevSpeed === 1.5) return 2;
       if (prevSpeed === 2) return 3;
@@ -254,9 +251,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
         <IoRepeat color={isLooping ? 'green' : 'black'} />
       </button>
       <div className="speed-control">
-        <button onClick={handleSpeedToggle}>
-          <IoSpeedometerOutline />
-        </button>
+        <IoSpeedometerOutline onClick={handleSpeedToggle} className="ico" />
         <span className="speed-display">{playbackSpeed}x</span>
       </div>
       <div className="zoom-control">
@@ -265,9 +260,9 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
           type="range"
           min="1"
           max="1200"
-          value={zoomLevel * 100}
-          onChange={(e) => handleZoom(e.target.value / 1)}
+          value={zoomLevel}
           className="zoom-range"
+          onChange={(e) => handleZoom(e.target.value)}
         />
       </div>
       <button onClick={handleSaveClick}>
@@ -275,7 +270,7 @@ const Controls = React.memo(({ isPlaying, setIsPlaying, audioRef, wavesurferInst
       </button>
     </Container>
   );
-});
+};
 
 Controls.propTypes = {
   isPlaying: PropTypes.bool.isRequired,
@@ -285,8 +280,7 @@ Controls.propTypes = {
   wavesurferRegions: PropTypes.object,
   isLooping: PropTypes.bool.isRequired,
   setIsLooping: PropTypes.func.isRequired,
-  selectedAudio: PropTypes.mp3Blob // Corrected PropTypes here
+  selectedAudio: PropTypes.string, // Make selectedAudio optional
 };
 
 export default Controls;
-

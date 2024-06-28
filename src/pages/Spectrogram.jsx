@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WaveformSetup from './SpectrogramC/Waveform';
-import AudioAnalysis from './SpectrogramC/audioAnalysis';
+import AudioAnalysis from './SpectrogramC/audioAnalysis'; // Import AudioAnalysis component
 import Controls from './Controls';
 import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
@@ -17,7 +17,6 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
   const [isLooping, setIsLooping] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-
   const regionColors = useRef({});
 
   useEffect(() => {
@@ -40,7 +39,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
     }
   }, [audioRef, selectedAudio]);
 
-  const addRegion = (regionName, url) => {
+  const addRegion = (regionName) => {
     if (wavesurferRegions) {
       const regions = wavesurferRegions.getRegions();
       const similarRegions = Object.values(regions).filter(region => region.data && region.data.content.startsWith(regionName));
@@ -52,18 +51,16 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
       }
   
       const start = wavesurferInstance.getCurrentTime();
-      const end = start + 10;
+      const end = start + 10; // You can adjust this as needed
+  
       const region = wavesurferRegions.addRegion({
         start,
         end,
-        data: {
-          url: url // Assign the URL to the region data
-        },
-        color: color,
+        color,
         content: newRegionName
       });
   
-      region.data = { ...region.data, content: newRegionName };
+      region.data = { content: newRegionName }; // Store region content if needed
   
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
@@ -117,7 +114,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
           selectedAudio={selectedAudio}
         />
       )}
-      <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} />
+      <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} /> {/* Integration of AudioAnalysis component */}
     </div>
   );
 };
