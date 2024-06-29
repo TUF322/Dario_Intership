@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { IoPlayBackSharp, IoPlayForwardSharp, IoPlaySkipBackSharp, IoPlaySkipForwardSharp, IoPlaySharp, IoPauseSharp, IoRepeat, IoSpeedometerOutline, IoSearchSharp, IoSaveSharp } from 'react-icons/io5';
+import {
+  IoPlayBackSharp, IoPlayForwardSharp, IoPlaySkipBackSharp, IoPlaySkipForwardSharp,
+  IoPlaySharp, IoPauseSharp, IoRepeat, IoSpeedometerOutline, IoSearchSharp, IoSaveSharp
+} from 'react-icons/io5';
 import PropTypes from 'prop-types';
 import Wavesurfer from 'wavesurfer.js';
 import decodeAudio from 'audio-decode';
-import lamejs from 'lamejs';
+import lamejs from 'lamejs'; // Ensure MPEGMode is imported
 
 const Container = styled.section`
   display: flex;
@@ -56,7 +59,6 @@ const Controls = ({
   const [lastRegionPlayed, setLastRegionPlayed] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
 
-  // Handle playback state changes
   useEffect(() => {
     if (isPlaying) {
       audioRef.current.play();
@@ -65,7 +67,6 @@ const Controls = ({
     }
   }, [isPlaying, audioRef]);
 
-  // Set playback speed
   useEffect(() => {
     audioRef.current.playbackRate = playbackSpeed;
     if (wavesurferInstance) {
@@ -73,7 +74,6 @@ const Controls = ({
     }
   }, [playbackSpeed, audioRef, wavesurferInstance]);
 
-  // Handle time updates and looping
   const handleTimeUpdate = useCallback(() => {
     if (wavesurferRegions && isLooping) {
       const currentTime = audioRef.current.currentTime;
@@ -107,7 +107,6 @@ const Controls = ({
     }
   }, [audioRef, isLooping, wavesurferRegions, lastRegionPlayed]);
 
-  // Add time update listener
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
@@ -115,7 +114,6 @@ const Controls = ({
     }
   }, [audioRef, handleTimeUpdate]);
 
-  // Handle playback control clicks
   const handleControlClick = (val, forward = false) => {
     if (forward) {
       audioRef.current.currentTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + val);
@@ -124,12 +122,10 @@ const Controls = ({
     }
   };
 
-  // Toggle looping
   const handleLoopToggle = useCallback(() => {
     setIsLooping(prevLoop => !prevLoop);
   }, [setIsLooping]);
 
-  // Handle zoom level change
   const handleZoom = (zoomValue) => {
     setZoomLevel(zoomValue);
     if (wavesurferInstance) {
@@ -137,24 +133,30 @@ const Controls = ({
     }
   };
 
-  // Save selected region as MP3
   const handleSaveClick = async () => {
-    if (!wavesurferRegions) return;
+    if (!wavesurferRegions || !selectedAudio) {
+      console.error('Selected audio or regions not available');
+      return;
+    }
 
     const regions = Object.values(wavesurferRegions.getRegions());
-    if (regions.length === 0) return;
+    if (regions.length === 0) {
+      console.error('No regions defined');
+      return;
+    }
 
     try {
       const audioBuffer = await fetchAudioBuffer(selectedAudio);
 
-      const region = lastRegionPlayed || regions[0]; // Use last played region or first region as default
+      const regionToSave = regions.find(region => region.id === lastRegionPlayed?.id) || regions[0];
+      const { start, end, data } = regionToSave;
 
-      const mp3Blob = await encodeBufferToMP3(audioBuffer, region.start, region.end);
+      const mp3Blob = await encodeBufferToMP3(audioBuffer, start, end);
 
       const url = URL.createObjectURL(mp3Blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'cut_region_audio.mp3';
+      link.download = `${data.content}.mp3`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -163,7 +165,6 @@ const Controls = ({
     }
   };
 
-  // Fetch audio buffer from selected audio file
   const fetchAudioBuffer = async (audioFile) => {
     try {
       const response = await fetch(audioFile);
@@ -176,7 +177,6 @@ const Controls = ({
     }
   };
 
-  // Encode audio buffer to MP3
   const encodeBufferToMP3 = async (audioBuffer, startSeconds, endSeconds) => {
     const mp3Encoder = new lamejs.Mp3Encoder(audioBuffer.numberOfChannels, audioBuffer.sampleRate, 128);
     const sampleRate = audioBuffer.sampleRate;
@@ -185,8 +185,8 @@ const Controls = ({
     const startSample = Math.floor(startSeconds * sampleRate);
     const endSample = Math.floor(endSeconds * sampleRate);
   
-    const maxSamples = 1152; // This is a good default chunk size for lamejs
-  
+    const maxSamples = 1152;
+
     const mp3Data = [];
   
     for (let channel = 0; channel < channels; channel++) {
@@ -207,62 +207,56 @@ const Controls = ({
       }
     }
   
-    // Flush remaining data
     const mp3buf = mp3Encoder.flush();
     if (mp3buf.length > 0) {
       mp3Data.push(new Int8Array(mp3buf));
     }
   
-    // Create a Blob from the MP3 data
     return new Blob(mp3Data, { type: 'audio/mp3' });
   };
 
-  // Toggle playback speed
   const handleSpeedToggle = () => {
     setPlaybackSpeed(prevSpeed => {
       if (prevSpeed === 1) return 1.5;
       if (prevSpeed === 1.5) return 2;
-      if (prevSpeed === 2) return 3;
-      if (prevSpeed === 3) return 4;
-      if (prevSpeed === 4) return 0.75;
-      if (prevSpeed === 0.75) return 0.5;
+      if (prevSpeed === 2) return 0.5;
       return 1;
     });
   };
 
   return (
     <Container>
-      <button onClick={() => handleControlClick(30)}>
+      <button onClick={() => handleControlClick(10, false)}>
         <IoPlaySkipBackSharp />
       </button>
-      <button onClick={() => handleControlClick(10)}>
+      <button onClick={() => handleControlClick(5, false)}>
         <IoPlayBackSharp />
       </button>
       <button onClick={() => setIsPlaying(!isPlaying)}>
         {isPlaying ? <IoPauseSharp /> : <IoPlaySharp />}
       </button>
-      <button onClick={() => handleControlClick(10, true)}>
+      <button onClick={() => handleControlClick(5, true)}>
         <IoPlayForwardSharp />
       </button>
-      <button onClick={() => handleControlClick(30, true)}>
+      <button onClick={() => handleControlClick(10, true)}>
         <IoPlaySkipForwardSharp />
       </button>
       <button onClick={handleLoopToggle}>
-        <IoRepeat color={isLooping ? 'green' : 'black'} />
+        <IoRepeat color={isLooping ? 'blue' : 'black'} />
       </button>
       <div className="speed-control">
-        <IoSpeedometerOutline onClick={handleSpeedToggle} className="ico" />
-        <span className="speed-display">{playbackSpeed}x</span>
+        <IoSpeedometerOutline className="ico" onClick={handleSpeedToggle} />
+        <div className="speed-display">{playbackSpeed}x</div>
       </div>
       <div className="zoom-control">
-        <IoSearchSharp />
+        <IoSearchSharp className="ico" />
         <input
           type="range"
           min="1"
-          max="1200"
+          max="500"
           value={zoomLevel}
-          className="zoom-range"
           onChange={(e) => handleZoom(e.target.value)}
+          className="zoom-range"
         />
       </div>
       <button onClick={handleSaveClick}>
@@ -275,12 +269,12 @@ const Controls = ({
 Controls.propTypes = {
   isPlaying: PropTypes.bool.isRequired,
   setIsPlaying: PropTypes.func.isRequired,
-  audioRef: PropTypes.object.isRequired,
-  wavesurferInstance: PropTypes.object,
+  audioRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
+  wavesurferInstance: PropTypes.instanceOf(Wavesurfer),
   wavesurferRegions: PropTypes.object,
   isLooping: PropTypes.bool.isRequired,
   setIsLooping: PropTypes.func.isRequired,
-  selectedAudio: PropTypes.string, // Make selectedAudio optional
+  selectedAudio: PropTypes.string // Update to not required
 };
 
 export default Controls;
