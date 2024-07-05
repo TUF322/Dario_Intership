@@ -9,6 +9,25 @@ import Wavesurfer from 'wavesurfer.js';
 import decodeAudio from 'audio-decode';
 import lamejs from 'lamejs'; 
 
+// Define MPEGMode
+const MPEGMode = {
+  NOT_SET: 0,
+  STEREO: 1,
+  JOINT_STEREO: 2,
+  DUAL_CHANNEL: 3,
+  MONO: 4,
+};
+
+// Define VbrMode if not already defined
+const VbrMode = {
+  vbr_off: 0,
+  vbr_mt: 1,
+  vbr_rh: 2,
+  vbr_abr: 3,
+  vbr_mtrh: 4,
+  vbr_max_indicator: 5,
+};
+
 const Container = styled.section`
   display: flex;
   justify-content: center;

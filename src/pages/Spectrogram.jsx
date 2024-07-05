@@ -66,7 +66,6 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
       console.log('Region content:', region.data ? region.data.content : 'No content');
     }
   };
-  
 
   const deleteRegion = (regionName) => {
     if (wavesurferRegions) {
