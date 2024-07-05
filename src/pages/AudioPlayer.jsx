@@ -1,14 +1,18 @@
 import React, { useState, useRef } from 'react';
-import DropFile from './dropfilepage'; // Adjust the import path as necessary
-import SpectrogramComponent from './Spectrogram'; // Adjust the import path as necessary
+import DropFile from './dropfilepage'; 
+import SpectrogramComponent from './Spectrogram'; 
 import styled from 'styled-components';
 
 const SpecCard = styled.div`
-  // Your styles here, if any
+  padding-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 15px;
+  margin-top: 20px;
+  width: 90vw;
 `;
 
 const App = () => {
-  const audioRef = useRef(new Audio()); // Create an audio object
+  const audioRef = useRef(new Audio()); 
   const [selectedAudio, setSelectedAudio] = useState(null);
 
   const handleFileUpload = (file) => {
@@ -16,14 +20,14 @@ const App = () => {
     setSelectedAudio(fileUrl);
     if (audioRef.current) {
       audioRef.current.src = fileUrl;
-      audioRef.current.load(); // Ensure the audio object reloads the new source
+      audioRef.current.load(); 
     }
   };
 
   return (
     <div>
       <DropFile onFileUpload={handleFileUpload} />
-      <SpecCard className='spectrogram-card'>
+      <SpecCard >
         <SpectrogramComponent audioRef={audioRef} selectedAudio={selectedAudio} />
       </SpecCard>
     </div>

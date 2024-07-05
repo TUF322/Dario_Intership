@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import WaveformSetup from './SpectrogramC/Waveform';
-import AudioAnalysis from './SpectrogramC/audioAnalysis'; // Import AudioAnalysis component
+import AudioAnalysis from './SpectrogramC/audioAnalysis';
 import Controls from './Controls';
 import RMenu from './RMenu';
 import ProgressBar from './ProgressBar';
@@ -51,7 +51,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
       }
   
       const start = wavesurferInstance.getCurrentTime();
-      const end = start + 10; // You can adjust this as needed
+      const end = start + 10; 
   
       const region = wavesurferRegions.addRegion({
         start,
@@ -60,7 +60,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
         content: newRegionName
       });
   
-      region.data = { content: newRegionName }; // Store region content if needed
+      region.data = { content: newRegionName }; 
   
       console.log('Region added:', region);
       console.log('Region content:', region.data ? region.data.content : 'No content');
@@ -114,7 +114,7 @@ const SpectrogramComponent = ({ audioRef, selectedAudio }) => {
           selectedAudio={selectedAudio}
         />
       )}
-      <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} /> {/* Integration of AudioAnalysis component */}
+      <AudioAnalysis canvasRef={canvasRef} audioRef={audioRef} /> 
     </div>
   );
 };

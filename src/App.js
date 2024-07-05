@@ -5,17 +5,17 @@ import Dropfile from './pages/dropfilepage'
 
 
 const App = () => {
-  const audioRef = useRef(null); // Create a ref for the audio element
+  const audioRef = useRef(null); 
 
   return (
     <Routes>
       <Route 
         path="/" 
-        element={<AudioPlayer audioRef={audioRef} />} // Pass the audioRef prop
+        element={<AudioPlayer audioRef={audioRef} />} 
       />
       <Route 
         path="/dropfile" 
-        element={<Dropfile audioRef={audioRef} />} // Pass the audioRef prop
+        element={<Dropfile audioRef={audioRef} />} 
       />
     </Routes>
   );

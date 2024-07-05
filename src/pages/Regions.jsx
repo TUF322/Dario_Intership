@@ -2,7 +2,6 @@ import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js';
 
-// Utility functions
 const random = (min, max) => Math.random() * (min - max) + min;
 const randomColor = () => `rgba(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)}, 0.5)`;
 
@@ -22,7 +21,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop, audioRate = 1)
 
   let activeRegion = null;
 
-  // Event handlers for region interactions
+  
   wsRegions.on('region-in', (region) => {
     console.log('region-in', region);
     activeRegion = region;
@@ -45,7 +44,7 @@ const initializeWaveformWithRegions = (audioUrl, container, loop, audioRate = 1)
     region.setOptions({ color: randomColor() });
   });
 
-  // Reset activeRegion when interacting with the waveform
+  
   ws.on('interaction', () => {
     activeRegion = null;
   });

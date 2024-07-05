@@ -64,7 +64,7 @@ const AudioAnalysis = ({ canvasRef, audioRef }) => {
 
       drawFrequencyScale(canvasCtx, canvas.width, audioContext.sampleRate);
 
-      // Display the current frequency on the top left of the canvas
+      
       const nyquist = audioContext.sampleRate / 2;
       const binWidth = nyquist / bufferLength;
       const currentIndex = dataArray.indexOf(Math.max(...dataArray));

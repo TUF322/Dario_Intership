@@ -7,7 +7,7 @@ import {
 import PropTypes from 'prop-types';
 import Wavesurfer from 'wavesurfer.js';
 import decodeAudio from 'audio-decode';
-import lamejs from 'lamejs'; // Ensure MPEGMode is imported
+import lamejs from 'lamejs'; 
 
 const Container = styled.section`
   display: flex;
@@ -278,7 +278,7 @@ Controls.propTypes = {
   wavesurferRegions: PropTypes.object,
   isLooping: PropTypes.bool.isRequired,
   setIsLooping: PropTypes.func.isRequired,
-  selectedAudio: PropTypes.string // Update to not required
+  selectedAudio: PropTypes.string 
 };
 
 export default Controls;
