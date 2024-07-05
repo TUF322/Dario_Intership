@@ -219,7 +219,11 @@ const Controls = ({
     setPlaybackSpeed(prevSpeed => {
       if (prevSpeed === 1) return 1.5;
       if (prevSpeed === 1.5) return 2;
-      if (prevSpeed === 2) return 0.5;
+      if (prevSpeed === 2) return 3;
+      if (prevSpeed === 3) return 4;
+      if (prevSpeed === 4) return 0.5;
+      if (prevSpeed === 0.5) return 0.25;
+      if (prevSpeed === 0.25) return 0.15;
       return 1;
     });
   };
@@ -252,8 +256,8 @@ const Controls = ({
         <IoSearchSharp className="ico" />
         <input
           type="range"
-          min="1"
-          max="500"
+          min="0"
+          max="900"
           value={zoomLevel}
           onChange={(e) => handleZoom(e.target.value)}
           className="zoom-range"
